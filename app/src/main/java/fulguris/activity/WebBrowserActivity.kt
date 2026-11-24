@@ -5525,13 +5525,15 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
      * holds focus); when a guard keeps it shown the countdown is simply consumed and starts
      * again the next time the web view gains focus.
      */
-    private fun hideToolBarOnTimeout() {
+        private fun hideToolBarOnTimeout() {
         // The countdown has been consumed: mark it as not pending. If any of the guards below
         // keeps the tool bar shown, nothing re-arms the countdown until the web view regains
         // input focus (see the focus change listener set up in setTabView). That is the intended
         // behavior: the tool bar only hides on its own while the page has focus.
         iHideToolBarTimeoutRunnable = null
+        if (userPreferences.pinTopToolbar) return
         if (!isToolBarVisible()) return
+
         if (!hasWindowFocus() || isInPictureInPictureMode) return
         // Never hide while the search field (or anything else) is focused.
         if (currentTabView?.hasFocus() != true) return
