@@ -3070,6 +3070,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
     override fun notifyTabViewAdded() {
         Timber.d("Notify Tab Added")
         tabsView?.tabAdded()
+        updateTabSquares()
     }
 
     /**
@@ -3079,6 +3080,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
     override fun notifyTabViewChanged(position: Int) {
         Timber.d("Notify Tab Changed: $position")
         tabsView?.tabChanged(position)
+        updateTabSquares()
         setToolbarColor()
         setupPullToRefresh(resources.configuration)
     }
@@ -3089,6 +3091,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
     override fun notifyTabViewInitialized() {
         Timber.d("Notify Tabs Initialized")
         tabsView?.tabsInitialized()
+        updateTabSquares()
     }
 
     /**
