@@ -38,10 +38,12 @@ class TabCountView @JvmOverloads constructor(
     private var borderWidth: Float = 0F
     private val workingRect = RectF()
 
-    private var count: Int = 0
+        private var count: Int = 0
     public var textColor: Int = Color.BLACK
+    public var borderColor: Int? = null
 
     private var bitmap: Bitmap? = null
+
     private var bitmapCanvas: Canvas? = null
 
     init {
