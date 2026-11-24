@@ -132,7 +132,7 @@ object MenuItems {
             canBeInTabMenu = true,
             defaultMenu = MenuType.MainMenu
         ),
-        MenuItemId.Settings to MenuItem(
+                MenuItemId.Settings to MenuItem(
             id = MenuItemId.Settings,
             labelId = R.string.settings,
             iconId = R.drawable.ic_settings_outline,
@@ -142,7 +142,17 @@ object MenuItems {
             canBeHidden = false,
             defaultMenu = MenuType.MainMenu
         ),
+        MenuItemId.PersonalSettings to MenuItem(
+            id = MenuItemId.PersonalSettings,
+            labelId = R.string.personal_settings,
+            iconId = R.drawable.ic_build,
+            viewId = R.id.menuItemPersonalSettings,
+            canBeInMainMenu = true,
+            canBeInTabMenu = true,
+            defaultMenu = MenuType.MainMenu
+        ),
         MenuItemId.Exit to MenuItem(
+
             id = MenuItemId.Exit,
             labelId = R.string.exit,
             iconId = R.drawable.ic_action_delete,
