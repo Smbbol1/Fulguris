@@ -496,13 +496,23 @@ class UserPreferences @Inject constructor(
      */
     var scrollbarFadeDuration by preferences.floatResPreference(R.string.pref_key_scrollbar_fade_duration, R.integer.pref_default_scrollbar_fade_duration)
 
-    /**
+        /**
      * WebView scrollbars size
      */
     var scrollbarSize by preferences.floatResPreference(R.string.pref_key_scrollbar_size, R.integer.pref_default_scrollbar_size)
 
+    /**
+     * Keep top toolbar permanently visible (never auto-hide on scroll or timeout).
+     */
+    var pinTopToolbar by preferences.booleanPreference(PIN_TOP_TOOLBAR, false)
+
+    /**
+     * Custom height in dp for the top toolbar (0 = use theme default).
+     */
+    var topToolbarHeightDp by preferences.intPreference(TOP_TOOLBAR_HEIGHT_DP, 0)
 
 }
+
 
 // SL: Looks like those are the actual shared property keys thus overriding what ever was defined in our XML
 // TODO: Remove those at some point and put new keys in resources
