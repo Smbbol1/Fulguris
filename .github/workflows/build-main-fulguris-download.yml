@@ -1,11 +1,8 @@
 name: Download
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+  on:
+  workflow_dispatch:     # <-- ESCRIBIR ESTO (con 2 espacios al inicio)
 jobs:
   build:
 
