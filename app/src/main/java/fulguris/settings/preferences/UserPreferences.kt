@@ -535,3 +535,6 @@ private const val DO_NOT_TRACK = "doNotTrack"
 private const val IDENTIFYING_HEADERS = "removeIdentifyingHeaders"
 private const val BOOKMARKS_CHANGED = "bookmarksChanged"
 private const val SEARCH_SUGGESTIONS = "searchSuggestionsChoice"
+private const val PIN_TOP_TOOLBAR = "pinTopToolbar"
+private const val TOP_TOOLBAR_HEIGHT_DP = "topToolbarHeightDp"
+
