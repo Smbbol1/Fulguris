@@ -5489,9 +5489,11 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         when (v.id) {
             R.id.home_button -> currentTab.apply { requestFocus(); loadHomePage() }
             // When not using drawer for tabs that button is used to show webpage menu
-            R.id.tabs_button -> if (configPrefs.tabBarInDrawer) openTabs() else {showMenuWebPage()}
+                        R.id.tabs_button -> if (configPrefs.tabBarInDrawer) openTabs() else {showMenuWebPage()}
             R.id.button_reload -> refreshOrStop()
+            R.id.button_find_in_page -> executeAction(R.id.action_find)
             R.id.button_next -> currentTab.findNext()
+
             R.id.button_back -> currentTab.findPrevious()
             R.id.button_quit -> {
                 currentTab.clearFind()
