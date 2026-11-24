@@ -268,9 +268,11 @@ class MenuPopupWindow : PopupWindow {
         iBinding.menuItemDownloads.isVisible = false
         iBinding.menuItemNewTab.isVisible = false
         iBinding.menuItemIncognito.isVisible = false
-        iBinding.menuItemOptions.isVisible = false
+                iBinding.menuItemOptions.isVisible = false
         iBinding.menuItemSettings.isVisible = false
+        iBinding.menuItemPersonalSettings.isVisible = false
         iBinding.menuItemExit.isVisible = false
+
 
         // Tab menu items
         iBinding.menuItemPageHistory.isVisible = false
