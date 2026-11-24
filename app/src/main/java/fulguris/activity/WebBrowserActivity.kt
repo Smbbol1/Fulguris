@@ -550,12 +550,14 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         // This callback is trigger after we switch session, Could be useful at some point
         //tabsManager.doAfterInitialization {}
 
-                // Hook in buttons with onClick handler
+                                // Hook in buttons with onClick handler
         iBindingToolbarContent.buttonReload.setOnClickListener(this)
         iBindingToolbarContent.buttonFindInPage.setOnClickListener(this)
+        iBindingToolbarContent.buttonClearCache.setOnClickListener(this)
     }
 
     /**
+
 
      * Call this whenever our configuration could have changed.
      * It takes care of setting our global configPrefs and make sure we are listening to changes.
