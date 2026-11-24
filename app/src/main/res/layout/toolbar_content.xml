@@ -93,13 +93,21 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:contentDescription="@string/home"
-        app:tooltipText="@{@string/home}"
+                app:tooltipText="@{@string/home}"
         app:srcCompat="@drawable/ic_home_outline"
         android:nextFocusDown="@id/web_view"
         />
 
+    <LinearLayout
+        android:id="@+id/tab_squares_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal" />
+
     <fulguris.icon.TabCountView
         android:id="@+id/tabs_button"
+
         style="?android:attr/actionButtonStyle"
         android:layout_width="@dimen/material_grid_touch_medium"
         android:layout_height="@dimen/material_grid_touch_medium"
