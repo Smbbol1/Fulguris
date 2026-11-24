@@ -4351,6 +4351,12 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             textColor = currentToolBarTextColor
             invalidate();
         }
+        for (i in 0 until iBindingToolbarContent.tabSquaresContainer.childCount) {
+            (iBindingToolbarContent.tabSquaresContainer.getChildAt(i) as? fulguris.icon.TabCountView)?.apply {
+                textColor = currentToolBarTextColor
+                invalidate()
+            }
+        }
         // Change tool bar home button color, needed when using desktop style tabs
         iBindingToolbarContent.homeButton.setColorFilter(currentToolBarTextColor)
         iBindingToolbarContent.buttonActionBack.setColorFilter(currentToolBarTextColor)
