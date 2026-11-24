@@ -5520,7 +5520,13 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
      *
      * @param v the view that the user has clicked
      */
-    override fun onClick(v: View) {
+        override fun onClick(v: View) {
+        if (v.id == R.id.button_clear_cache) {
+            (tabsManager.currentTab?.webView ?: android.webkit.WebView(this)).clearCache(true)
+            tabsManager.currentTab?.reload(aForce = true)
+            snackbar(R.string.message_cache_cleared)
+            return
+        }
         // With no tab open the tabs button is the way back in: instead of
         // opening an empty tab list / web-page menu it creates a tab.
         if (v.id == R.id.tabs_button && tabsManager.currentTab == null) {
@@ -5538,12 +5544,8 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
                         R.id.tabs_button -> if (configPrefs.tabBarInDrawer) openTabs() else {showMenuWebPage()}
                         R.id.button_reload -> refreshOrStop()
             R.id.button_find_in_page -> executeAction(R.id.action_find)
-            R.id.button_clear_cache -> {
-                currentTab.webView?.clearCache(true)
-                currentTab.reload()
-                snackbar(R.string.message_cache_cleared)
-            }
             R.id.button_next -> currentTab.findNext()
+
 
 
             R.id.button_back -> currentTab.findPrevious()
