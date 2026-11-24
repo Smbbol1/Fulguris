@@ -35,9 +35,11 @@ enum class MenuItemId {
     Downloads,
     NewTab,
     Incognito,
-    Options,
+        Options,
     Settings,
+    PersonalSettings,
     Exit,
+
 
     // Tab menu items
     MainMenu,
