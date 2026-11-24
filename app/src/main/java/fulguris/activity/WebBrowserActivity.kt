@@ -3805,19 +3805,164 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
     /**
      *
      */
+        private fun getDefaultToolbarHeightPx(configuration: Configuration = resources.configuration): Int {
+        val toolbarSize = if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            R.dimen.toolbar_height_portrait
+        } else {
+            R.dimen.toolbar_height_landscape
+        }
+        return dimen(toolbarSize)
+    }
+
+    private fun getEffectiveToolbarHeightPx(configuration: Configuration = resources.configuration): Int {
+        val customDp = userPreferences.topToolbarHeightDp
+        return if (customDp > 0) {
+            (customDp * resources.displayMetrics.density).toInt()
+        } else {
+            getDefaultToolbarHeightPx(configuration)
+        }
+    }
+
+    private fun getToolbarScaleFactor(configuration: Configuration = resources.configuration): Float {
+        val defaultPx = getDefaultToolbarHeightPx(configuration).coerceAtLeast(1)
+        val effectivePx = getEffectiveToolbarHeightPx(configuration)
+        return (effectivePx.toFloat() / defaultPx.toFloat()).coerceIn(0.55f, 1.8f)
+    }
+
+    private fun applyUniformToolbarScaling(configuration: Configuration = resources.configuration) {
+        val heightPx = getEffectiveToolbarHeightPx(configuration)
+        val scale = getToolbarScaleFactor(configuration)
+        val density = resources.displayMetrics.density
+
+        iBinding.toolbarInclude.toolbar.layoutParams = iBinding.toolbarInclude.toolbar.layoutParams.apply {
+            height = heightPx
+        }
+        iBinding.toolbarInclude.toolbar.minimumHeight = heightPx
+
+        // Escalar contenedor de la barra de direcciones (márgenes y texto)
+        val addressRoot = iBindingToolbarContent.addressBarInclude.root
+        (addressRoot.layoutParams as? ViewGroup.MarginLayoutParams)?.apply {
+            topMargin = (8 * density * scale).toInt()
+            bottomMargin = (12 * density * scale).toInt()
+            leftMargin = (8 * density * scale).toInt()
+            rightMargin = (2 * density * scale).toInt()
+            addressRoot.layoutParams = this
+        }
+
+        // Escalar texto de dirección web e icono SSL
+        searchView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, (15f * scale).coerceIn(10f, 24f))
+        val sslView = iBindingToolbarContent.addressBarInclude.searchSslStatus
+        sslView.layoutParams = sslView.layoutParams.apply {
+            width = (36 * density * scale).toInt().coerceAtLeast((20 * density).toInt())
+        }
+        val sslPad = (8 * density * scale).toInt()
+        sslView.setPadding(sslPad, sslPad, sslPad, sslPad)
+
+        // Escalar uniformemente todos los iconos de la barra (rayo, recargar, atrás, adelante, home, buscar, limpiar caché)
+        val iconBtnSize = (42 * density * scale).toInt().coerceAtLeast((24 * density).toInt())
+        val iconPad = (9 * density * scale).toInt().coerceAtLeast((4 * density).toInt())
+        val toolbarButtons = listOf(
+            iBindingToolbarContent.buttonReload,
+            iBindingToolbarContent.buttonActionBack,
+            iBindingToolbarContent.buttonActionForward,
+            iBindingToolbarContent.homeButton,
+            iBindingToolbarContent.buttonFindInPage,
+            iBindingToolbarContent.buttonMore,
+            iBindingToolbarContent.buttonClearCache
+        )
+        toolbarButtons.forEach { btn ->
+            btn.layoutParams = btn.layoutParams.apply {
+                width = iconBtnSize
+                height = iconBtnSize
+            }
+            btn.setPadding(iconPad, iconPad, iconPad, iconPad)
+            btn.scaleType = ImageView.ScaleType.FIT_CENTER
+        }
+
+        // Escalar cuadrados de pestañas
+        updateTabSquares()
+        iBinding.toolbarInclude.toolbar.requestLayout()
+    }
+
+    private fun showPersonalSettingsDialog() {
+        val density = resources.displayMetrics.density
+        val pad = (20 * density).toInt()
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(pad, (12 * density).toInt(), pad, (8 * density).toInt())
+        }
+
+        // 1. Interruptor: Fijar barra superior
+        val switchPin = com.google.android.material.switchmaterial.SwitchMaterial(this).apply {
+            text = getString(R.string.pin_top_toolbar)
+            isChecked = userPreferences.pinTopToolbar
+            textSize = 16f
+            setOnCheckedChangeListener { _, isChecked ->
+                userPreferences.pinTopToolbar = isChecked
+                if (isChecked) {
+                    cancelHideToolBarTimeout()
+                    showActionBar()
+                } else if (tabsManager.currentTab?.isLoading != true && currentTabView?.hasFocus() == true) {
+                    scheduleHideToolBarTimeout()
+                }
+            }
+        }
+        val switchDesc = TextView(this).apply {
+            text = getString(R.string.pin_top_toolbar_summary)
+            textSize = 12.5f
+            alpha = 0.75f
+            setPadding(0, (2 * density).toInt(), 0, (18 * density).toInt())
+        }
+
+        // 2. Barra deslizante: Altura de la barra superior (32dp a 84dp)
+        val minDp = 32
+        val maxDp = 84
+        val defaultDp = (getDefaultToolbarHeightPx() / density).toInt().coerceIn(minDp, maxDp)
+        val currentDp = if (userPreferences.topToolbarHeightDp > 0) userPreferences.topToolbarHeightDp else defaultDp
+
+        val heightLabel = TextView(this).apply {
+            text = getString(R.string.toolbar_height_slider, currentDp)
+            textSize = 15f
+            setPadding(0, 0, 0, (6 * density).toInt())
+        }
+
+        val seekBar = SeekBar(this).apply {
+            max = maxDp - minDp
+            progress = (currentDp - minDp).coerceIn(0, max)
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
+                    val selectedDp = minDp + progress
+                    heightLabel.text = getString(R.string.toolbar_height_slider, selectedDp)
+                    userPreferences.topToolbarHeightDp = selectedDp
+                    applyUniformToolbarScaling()
+                }
+                override fun onStartTrackingTouch(sb: SeekBar?) {}
+                override fun onStopTrackingTouch(sb: SeekBar?) {}
+            })
+        }
+
+        container.addView(switchPin)
+        container.addView(switchDesc)
+        container.addView(heightLabel)
+        container.addView(seekBar)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.personal_settings)
+            .setView(container)
+            .setNeutralButton(R.string.action_reset) { _, _ ->
+                userPreferences.pinTopToolbar = false
+                userPreferences.topToolbarHeightDp = 0
+                applyUniformToolbarScaling()
+            }
+            .setPositiveButton(R.string.action_ok, null)
+            .show()
+    }
+
     private fun initializeToolbarHeight(configuration: Configuration) =
             iBinding.uiLayout.doOnLayout {
-                // TODO externalize the dimensions
-                val toolbarSize = if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    R.dimen.toolbar_height_portrait
-                } else {
-                    R.dimen.toolbar_height_landscape
-                }
-
-                iBinding.toolbarInclude.toolbar.layoutParams.height = dimen(toolbarSize)
-                iBinding.toolbarInclude.toolbar.minimumHeight = toolbarSize
-                iBinding.toolbarInclude.toolbar.requestLayout()
+                applyUniformToolbarScaling(configuration)
             }
+
 
     /**
      * Enter Picture-in-Picture mode for the current tab.
