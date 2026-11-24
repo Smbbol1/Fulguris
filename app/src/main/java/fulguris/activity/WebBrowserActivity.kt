@@ -4576,10 +4576,40 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
 
     override fun updateTabNumber(number: Int) {
         iBindingToolbarContent.tabsButton.updateCount(number)
+        updateTabSquares()
         // Hide the no-tab empty state as soon as a tab exists again (e.g. a tab
         // is restored from the "tab closed" snackbar or a new tab is created).
         if (number > 0) {
             iBinding.emptyTabsView.isVisible = false
+        }
+    }
+
+    private fun updateTabSquares() {
+        val container = iBindingToolbarContent.tabSquaresContainer
+        container.removeAllViews()
+        val totalTabs = tabsManager.size()
+        val currentIndex = tabsManager.indexOfCurrentTab()
+        val density = resources.displayMetrics.density
+        val sizePx = (40 * density).toInt()
+
+        for (i in 0 until totalTabs) {
+            val isSelected = (i == currentIndex)
+            val square = fulguris.icon.TabCountView(this).apply {
+                layoutParams = LinearLayout.LayoutParams(sizePx, sizePx)
+                configureSquare(
+                    borderRadiusPx = 6f * density,
+                    borderWidthPx = (if (isSelected) 2.8f else 1.5f) * density,
+                    textSizePx = 10.5f * density
+                )
+                textColor = currentToolBarTextColor
+                borderColor = if (isSelected) Color.RED else null
+                alpha = if (isSelected) 1.0f else 0.65f
+                updateCount(i + 1)
+                setOnClickListener {
+                    tabsManager.tabChanged(i, false, i < tabsManager.indexOfCurrentTab())
+                }
+            }
+            container.addView(square)
         }
     }
 
