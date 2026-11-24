@@ -3047,11 +3047,13 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
     /**
      * From [WebBrowser].
      */
-    override fun notifyTabViewRemoved(position: Int) {
+        override fun notifyTabViewRemoved(position: Int) {
         Timber.d("Notify Tab Removed: $position")
         tabsView?.tabRemoved(position)
+        updateTabSquares()
 
         if (userPreferences.onTabCloseShowSnackbar && !skipNextTabClosedSnackbar) {
+
             // Notify user a tab was closed with an option to recover it
             makeSnackbar(
                     getString(R.string.notify_tab_closed), Snackbar.LENGTH_SHORT, if (configPrefs.toolbarsBottom) Gravity.TOP else Gravity.BOTTOM)
