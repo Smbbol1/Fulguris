@@ -34,8 +34,13 @@
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
     <string name="settings">Settings</string>
+    <string name="personal_settings">Ajustes personales</string>
+    <string name="pin_top_toolbar">Fijar barra superior</string>
+    <string name="pin_top_toolbar_summary">Mantiene siempre visible la barra de direcciones, pestañas e iconos</string>
+    <string name="toolbar_height_slider">Altura de barra superior: %1$d dp</string>
     <string name="options">Options</string>
     <string name="pref_title_location">Location</string>
+
     <string name="password">Save your passwords</string>
     <string name="agent">User agent</string>
     <string name="home">Homepage</string>
