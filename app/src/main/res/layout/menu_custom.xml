@@ -205,7 +205,7 @@
                         app:drawableStartCompat="@drawable/ic_build"
                         android:text="@string/options" />
 
-                    <TextView
+                                        <TextView
                         android:id="@+id/menuItemSettings"
                         style="@style/BrowserTextMenuItem"
                         android:visibility="gone"
@@ -214,6 +214,15 @@
                         android:text="@string/settings" />
 
                     <TextView
+                        android:id="@+id/menuItemPersonalSettings"
+                        style="@style/BrowserTextMenuItem"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        app:drawableStartCompat="@drawable/ic_build"
+                        android:text="@string/personal_settings" />
+
+                    <TextView
+
                         android:id="@+id/menuItemExit"
                         style="@style/BrowserTextMenuItem"
                         android:visibility="gone"
