@@ -4584,7 +4584,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         }
     }
 
-    private fun updateTabSquares() {
+        private fun updateTabSquares() {
         val container = iBindingToolbarContent.tabSquaresContainer
         container.removeAllViews()
         val totalTabs = tabsManager.size()
@@ -4595,7 +4595,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         for (i in 0 until totalTabs) {
             val isSelected = (i == currentIndex)
             val square = fulguris.icon.TabCountView(this).apply {
-                layoutParams = LinearLayout.LayoutParams(sizePx, sizePx)
+                layoutParams = android.widget.LinearLayout.LayoutParams(sizePx, sizePx)
                 configureSquare(
                     borderRadiusPx = 6f * density,
                     borderWidthPx = (if (isSelected) 2.8f else 1.5f) * density,
@@ -4612,6 +4612,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             container.addView(square)
         }
     }
+
 
     /**
      *
