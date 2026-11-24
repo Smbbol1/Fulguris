@@ -73,6 +73,17 @@ class TabCountView @JvmOverloads constructor(
         }
     }
 
+        /**
+     * Configure border and text dimensions programmatically for dynamic tab squares.
+     */
+    fun configureSquare(borderRadiusPx: Float, borderWidthPx: Float, textSizePx: Float) {
+        this.borderRadius = borderRadiusPx
+        this.borderWidth = borderWidthPx
+        this.paint.textSize = textSizePx
+        this.bitmap = null
+        invalidate()
+    }
+
     /**
      * Update the number count displayed by the view.
      */
@@ -93,10 +104,11 @@ class TabCountView @JvmOverloads constructor(
         updateBitmap()
         // Reset our bitmap
         bitmapCanvas?.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        // Make sure we reset our text color in case it did change
-        paint.color = textColor
+        // Make sure we reset our border color in case it did change
+        paint.color = borderColor ?: textColor
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = borderWidth
+
         // Draw antialias round rect in bitmap
         bitmapCanvas?.drawRoundRect(workingRect, borderRadius, borderRadius, paint)
 
