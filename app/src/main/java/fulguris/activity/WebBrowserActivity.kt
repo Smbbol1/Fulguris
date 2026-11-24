@@ -4371,12 +4371,14 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         //setMenuItemColor(R.id.action_reload, currentToolBarTextColor)
         // SSL status icon color
         iBindingToolbarContent.addressBarInclude.searchSslStatus.setColorFilter(currentToolBarTextColor)
-                // Toolbar buttons filter
+                                // Toolbar buttons filter
         iBindingToolbarContent.buttonFindInPage.setColorFilter(currentToolBarTextColor)
         iBindingToolbarContent.buttonMore.setColorFilter(currentToolBarTextColor)
         iBindingToolbarContent.buttonReload.setColorFilter(currentToolBarTextColor)
+        iBindingToolbarContent.buttonClearCache.setColorFilter(currentToolBarTextColor)
 
         // Pull to refresh spinner color also follow current theme
+
 
         iTabViewContainerFront.setProgressBackgroundColorSchemeColor(color)
         iTabViewContainerFront.setColorSchemeColors(currentToolBarTextColor)
