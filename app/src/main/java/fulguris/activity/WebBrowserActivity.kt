@@ -5520,14 +5520,39 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
      *
      * @param v the view that the user has clicked
      */
-        override fun onClick(v: View) {
+                override fun onClick(v: View) {
         if (v.id == R.id.button_clear_cache) {
-            (tabsManager.currentTab?.webView ?: android.webkit.WebView(this)).clearCache(true)
-            tabsManager.currentTab?.reload(aForce = true)
+            val currentTab = tabsManager.currentTab
+            val currentHost = currentTab?.url?.let { Uri.parse(it).host }
+
+            (currentTab?.webView ?: android.webkit.WebView(this)).clearCache(true)
+
+            val clearWebStorageJs = """
+                (function() {
+                    try { localStorage.clear(); } catch(e) {}
+                    try { sessionStorage.clear(); } catch(e) {}
+                    try {
+                        if ('caches' in window) {
+                            caches.keys().then(function(keys) {
+                                keys.forEach(function(key) { caches.delete(key); });
+                            });
+                        }
+                    } catch(e) {}
+                })();
+            """.trimIndent()
+
+            tabsManager.allTabs.forEach { tab ->
+                val tabHost = Uri.parse(tab.url).host
+                if (tab != currentTab && (currentHost == null || tabHost != currentHost)) {
+                    tab.webView?.evaluateJavascript(clearWebStorageJs, null)
+                }
+            }
+
             snackbar(R.string.message_cache_cleared)
             return
         }
         // With no tab open the tabs button is the way back in: instead of
+
         // opening an empty tab list / web-page menu it creates a tab.
         if (v.id == R.id.tabs_button && tabsManager.currentTab == null) {
             if (isIncognito()) {
