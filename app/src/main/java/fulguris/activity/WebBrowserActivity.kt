@@ -770,9 +770,11 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             onMenuItemClicked(iBinding.menuItemHistory) { dismiss(); executeAction(R.id.action_history) }
             onMenuItemClicked(iBinding.menuItemDownloads) { dismiss(); executeAction(R.id.action_downloads) }
             onMenuItemClicked(iBinding.menuItemBookmarks) { dismiss(); executeAction(R.id.action_bookmarks) }
-            onMenuItemClicked(iBinding.menuItemExit) { dismiss(); executeAction(R.id.action_exit) }
+                        onMenuItemClicked(iBinding.menuItemExit) { dismiss(); executeAction(R.id.action_exit) }
             onMenuItemClicked(iBinding.menuItemSettings) { dismiss(); executeAction(R.id.action_settings) }
+            onMenuItemClicked(iBinding.menuItemPersonalSettings) { dismiss(); showPersonalSettingsDialog() }
             onMenuItemClicked(iBinding.menuItemOptions) {
+
                 dismiss()
                 app.domain = currentHost()
                 iBottomSheet.setLayout(R.layout.fragment_settings_options).show()
