@@ -5444,14 +5444,18 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         tabsManager.deleteTab(tabsManager.positionOf(tab))
     }
 
-    /**
+        /**
      * Hide the ActionBar if we are in full-screen
      */
     override fun hideActionBar() {
+        if (userPreferences.pinTopToolbar) {
+            return
+        }
         if (isFullScreen) {
             doHideToolBar()
         }
     }
+
 
     /**
      * Display the ActionBar if it was hidden. Also re-arms the "Hide tool bar after"
