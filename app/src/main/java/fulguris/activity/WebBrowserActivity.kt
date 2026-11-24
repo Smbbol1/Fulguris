@@ -4590,23 +4590,25 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         }
     }
 
-        private fun updateTabSquares() {
+                private fun updateTabSquares() {
         val container = iBindingToolbarContent.tabSquaresContainer
         container.removeAllViews()
         val totalTabs = tabsManager.size()
         val currentIndex = tabsManager.indexOfCurrentTab()
         val density = resources.displayMetrics.density
-        val sizePx = (40 * density).toInt()
+        val scale = getToolbarScaleFactor()
+        val sizePx = (40 * density * scale).toInt().coerceAtLeast((22 * density).toInt())
 
         for (i in 0 until totalTabs) {
             val isSelected = (i == currentIndex)
             val square = fulguris.icon.TabCountView(this).apply {
                 layoutParams = android.widget.LinearLayout.LayoutParams(sizePx, sizePx)
                 configureSquare(
-                    borderRadiusPx = 6f * density,
-                    borderWidthPx = (if (isSelected) 2.8f else 1.5f) * density,
-                    textSizePx = 10.5f * density
+                    borderRadiusPx = 6f * density * scale,
+                    borderWidthPx = (if (isSelected) 2.8f else 1.5f) * density * scale,
+                    textSizePx = (10.5f * density * scale).coerceAtLeast(8f * density)
                 )
+
                 textColor = currentToolBarTextColor
                 borderColor = if (isSelected) Color.RED else null
                 alpha = if (isSelected) 1.0f else 0.65f
