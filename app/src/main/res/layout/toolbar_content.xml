@@ -109,12 +109,25 @@
         app:tabIconColor="?attr/colorControlNormal"
         app:tabIconTextSize="10dp"
         android:contentDescription="@string/tabs"
-        app:tooltipText="@{@string/tabs}"
+                app:tooltipText="@{@string/tabs}"
+        android:nextFocusDown="@id/web_view"
+        />
+
+    <ImageButton
+        android:id="@+id/button_find_in_page"
+        style="?android:attr/actionButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:srcCompat="@drawable/ic_find_in_page"
+        android:contentDescription="@string/action_find"
+        app:tooltipText="@{@string/action_find}"
         android:nextFocusDown="@id/web_view"
         />
 
     <ImageButton
         android:id="@+id/button_more"
+
         style="?android:attr/actionButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
