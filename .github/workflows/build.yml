@@ -22,30 +22,35 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # Compila usando el wrapper del proyecto con la tarea estándar Debug
+      # Compila únicamente la variante F-Droid (evita cierres por falta de Firebase/Google Services)
       - name: Build Debug APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleFullFdroidDebug
 
       - name: Prepare APK
         run: |
           set -e
           mkdir -p output
           echo "=== APKs generados ==="
-          find . -name "*.apk"
-          APK_FILE=$(find . -name "*arm64-v8a*.apk" ! -name "*unsigned*" | head -n 1)
+          find app/build/outputs/apk -name "*.apk"
+          
+          # Busca primero el APK específico para ARM64 (v8a) dentro de F-Droid
+          APK_FILE=$(find app/build/outputs/apk/fullFdroid/debug -name "*arm64-v8a*.apk" ! -name "*unsigned*" | head -n 1)
+          
+          # Si el proyecto genera un APK universal sin división por arquitectura, toma ese
           if [ -z "$APK_FILE" ]; then
-            APK_FILE=$(find . -name "*.apk" ! -name "*unsigned*" | head -n 1)
+            APK_FILE=$(find app/build/outputs/apk/fullFdroid/debug -name "*.apk" ! -name "*unsigned*" | head -n 1)
           fi
+          
           if [ -z "$APK_FILE" ]; then
-            echo "Error: No se encontró ningún APK firmado."
+            echo "Error: No se encontró ningún APK firmado en fullFdroid/debug."
             exit 1
           fi
+          
           echo "=== APK seleccionado: $APK_FILE ==="
           cp "$APK_FILE" output/ClintBrowser-ARMv8-debug.apk
 
-      # GitHub ya lo empaqueta en un solo ZIP automáticamente
       - name: Upload APK to Summary
         uses: actions/upload-artifact@v4
         with:
