@@ -22,11 +22,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # Compila únicamente la variante F-Droid (evita cierres por falta de Firebase/Google Services)
+      # Compila la variante exacta de F-Droid sin dependencias de Google/Firebase
       - name: Build Debug APK
         run: |
           chmod +x gradlew
-          ./gradlew assembleFullFdroidDebug
+          ./gradlew assembleSlionsFullFdroidDebug
 
       - name: Prepare APK
         run: |
@@ -35,16 +35,16 @@ jobs:
           echo "=== APKs generados ==="
           find app/build/outputs/apk -name "*.apk"
           
-          # Busca primero el APK específico para ARM64 (v8a) dentro de F-Droid
-          APK_FILE=$(find app/build/outputs/apk/fullFdroid/debug -name "*arm64-v8a*.apk" ! -name "*unsigned*" | head -n 1)
+          # Busca el APK específico para ARM64 (v8a) dentro de slionsFullFdroid
+          APK_FILE=$(find app/build/outputs/apk/slionsFullFdroid/debug -name "*arm64-v8a*.apk" ! -name "*unsigned*" | head -n 1)
           
-          # Si el proyecto genera un APK universal sin división por arquitectura, toma ese
+          # Si genera un APK universal en esa carpeta, lo selecciona
           if [ -z "$APK_FILE" ]; then
-            APK_FILE=$(find app/build/outputs/apk/fullFdroid/debug -name "*.apk" ! -name "*unsigned*" | head -n 1)
+            APK_FILE=$(find app/build/outputs/apk/slionsFullFdroid/debug -name "*.apk" ! -name "*unsigned*" | head -n 1)
           fi
           
           if [ -z "$APK_FILE" ]; then
-            echo "Error: No se encontró ningún APK firmado en fullFdroid/debug."
+            echo "Error: No se encontró ningún APK en slionsFullFdroid/debug."
             exit 1
           fi
           
