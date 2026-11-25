@@ -3814,7 +3814,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         return dimen(toolbarSize)
     }
 
-    private fun getEffectiveToolbarHeightPx(configuration: Configuration = resources.configuration): Int {
+        private fun getEffectiveToolbarHeightPx(configuration: Configuration = resources.configuration): Int {
         val customDp = userPreferences.topToolbarHeightDp
         return if (customDp > 0) {
             (customDp * resources.displayMetrics.density).toInt()
@@ -3826,7 +3826,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
     private fun getToolbarScaleFactor(configuration: Configuration = resources.configuration): Float {
         val defaultPx = getDefaultToolbarHeightPx(configuration).coerceAtLeast(1)
         val effectivePx = getEffectiveToolbarHeightPx(configuration)
-        return (effectivePx.toFloat() / defaultPx.toFloat()).coerceIn(0.55f, 1.8f)
+        return (effectivePx.toFloat() / defaultPx.toFloat()).coerceIn(0.45f, 1.8f)
     }
 
     private fun applyUniformToolbarScaling(configuration: Configuration = resources.configuration) {
@@ -3839,28 +3839,34 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         }
         iBinding.toolbarInclude.toolbar.minimumHeight = heightPx
 
-        // Escalar contenedor de la barra de direcciones (márgenes y texto)
+        iBindingToolbarContent.root.layoutParams = iBindingToolbarContent.root.layoutParams?.apply {
+            height = heightPx
+        }
+
+        // Escalar contenedor de la barra de direcciones (márgenes proporcionales sin aplastar el texto)
         val addressRoot = iBindingToolbarContent.addressBarInclude.root
         (addressRoot.layoutParams as? ViewGroup.MarginLayoutParams)?.apply {
-            topMargin = (8 * density * scale).toInt()
-            bottomMargin = (12 * density * scale).toInt()
-            leftMargin = (8 * density * scale).toInt()
+            topMargin = (5 * density * scale).toInt()
+            bottomMargin = (7 * density * scale).toInt()
+            leftMargin = (6 * density * scale).toInt()
             rightMargin = (2 * density * scale).toInt()
             addressRoot.layoutParams = this
         }
 
         // Escalar texto de dirección web e icono SSL
-        searchView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, (15f * scale).coerceIn(10f, 24f))
+        searchView.setPadding((6 * density * scale).toInt(), 0, (6 * density * scale).toInt(), 0)
+        searchView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, (15f * scale).coerceIn(8.5f, 24f))
         val sslView = iBindingToolbarContent.addressBarInclude.searchSslStatus
         sslView.layoutParams = sslView.layoutParams.apply {
-            width = (36 * density * scale).toInt().coerceAtLeast((20 * density).toInt())
+            width = (32 * density * scale).toInt().coerceAtLeast((14 * density).toInt())
+            height = (32 * density * scale).toInt().coerceAtLeast((14 * density).toInt())
         }
-        val sslPad = (8 * density * scale).toInt()
+        val sslPad = (6 * density * scale).toInt()
         sslView.setPadding(sslPad, sslPad, sslPad, sslPad)
 
         // Escalar uniformemente todos los iconos de la barra (rayo, recargar, atrás, adelante, home, buscar, limpiar caché)
-        val iconBtnSize = (42 * density * scale).toInt().coerceAtLeast((24 * density).toInt())
-        val iconPad = (9 * density * scale).toInt().coerceAtLeast((4 * density).toInt())
+        val iconBtnSize = (40 * density * scale).toInt().coerceAtLeast((18 * density).toInt())
+        val iconPad = (8 * density * scale).toInt().coerceAtLeast((2 * density).toInt())
         val toolbarButtons = listOf(
             iBindingToolbarContent.buttonReload,
             iBindingToolbarContent.buttonActionBack,
@@ -3879,8 +3885,27 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             btn.scaleType = ImageView.ScaleType.FIT_CENTER
         }
 
-        // Escalar cuadrados de pestañas
+        // Escalar también el botón contador de pestañas principal
+        iBindingToolbarContent.tabsButton.apply {
+            layoutParams = layoutParams.apply {
+                width = iconBtnSize
+                height = iconBtnSize
+            }
+            configureSquare(
+                borderRadiusPx = 6f * density * scale,
+                borderWidthPx = 2f * density * scale,
+                textSizePx = (10f * density * scale).coerceAtLeast(6.5f * density)
+            )
+            textColor = currentToolBarTextColor
+        }
+
+        // Escalar cuadrados de pestañas y mantener el color activo de la página
         updateTabSquares()
+        if (currentUiColor != Color.TRANSPARENT) {
+            applyToolbarColor(currentUiColor)
+        } else {
+            setToolbarColor()
+        }
         iBinding.toolbarInclude.toolbar.requestLayout()
     }
 
@@ -3914,11 +3939,12 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             setPadding(0, (2 * density).toInt(), 0, (18 * density).toInt())
         }
 
-        // 2. Barra deslizante: Altura de la barra superior (32dp a 84dp)
-        val minDp = 32
+        // 2. Barra deslizante: Altura de la barra superior (24dp a 84dp)
+        val minDp = 24
         val maxDp = 84
         val defaultDp = (getDefaultToolbarHeightPx() / density).toInt().coerceIn(minDp, maxDp)
         val currentDp = if (userPreferences.topToolbarHeightDp > 0) userPreferences.topToolbarHeightDp else defaultDp
+
 
         val heightLabel = TextView(this).apply {
             text = getString(R.string.toolbar_height_slider, currentDp)
