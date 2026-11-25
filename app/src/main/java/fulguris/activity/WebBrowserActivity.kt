@@ -4371,17 +4371,20 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         super.onStop()
         iInputManager?.unregisterInputDeviceListener(iInputDeviceListener)
         iInputManager = null
-        if (BuildConfig.DEBUG) {
+                if (BuildConfig.DEBUG) {
             try { unregisterReceiver(iCursorTeleportReceiver) } catch (_: Exception) { }
         }
         // When in PiP and user dismisses the PiP window, onStop is called.
         // Make sure we pause the current tab then.
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N && !isInPictureInPictureMode) {
-            tabsManager.currentTab?.onPause()
+        if (!userPreferences.backgroundAudioPlayback || isFinishing) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N && !isInPictureInPictureMode) {
+                tabsManager.currentTab?.onPause()
+            }
         }
     }
 
     /**
+
      * Amazingly this is not called when closing our app from Task list.
      * See: https://developer.android.com/reference/android/app/Activity.html#onDestroy()
      *
