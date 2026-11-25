@@ -25,13 +25,15 @@
 
 <LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="@dimen/toolbar_height_portrait"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
     android:layout_marginRight="5dp"
     android:animateLayoutChanges="true">
 
 
     <include android:id="@+id/address_bar_include" layout="@layout/search" />
+
 
     <!--
 
