@@ -4517,12 +4517,17 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         }
     }
 
-    /**
+        /**
      * Apply given color and derivative to our toolbar, its components and status bar too.
      */
     private fun applyToolbarColor(color: Int) {
+        if (color == currentUiColor && iBinding.toolbarInclude.toolbarLayout.background is ColorDrawable
+            && (iBinding.toolbarInclude.toolbarLayout.background as ColorDrawable).color == color) {
+            return
+        }
         //Workout a foreground color that will be working with our background color
         currentToolBarTextColor = foregroundColorFromBackgroundColor(color)
+
         // Change search view text color
         searchView.setTextColor(currentToolBarTextColor)
         searchView.setHintTextColor(DrawableUtils.mixColor(0.5f, currentToolBarTextColor, color))
