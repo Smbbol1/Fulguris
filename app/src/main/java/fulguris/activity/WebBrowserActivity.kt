@@ -4547,10 +4547,11 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         iBindingToolbarContent.buttonActionBack.setColorFilter(currentToolBarTextColor)
         iBindingToolbarContent.buttonActionForward.setColorFilter(currentToolBarTextColor)
 
-        // Needed to delay that as otherwise disabled alpha state didn't get applied
-        mainHandler.postDelayed({ updateNavigationButtons() }, 500)
+                // Actualizar estado de botones sin acumular callbacks retrasados
+        updateNavigationButtons()
 
         // Change reload icon color
+
         //setMenuItemColor(R.id.action_reload, currentToolBarTextColor)
         // SSL status icon color
         iBindingToolbarContent.addressBarInclude.searchSslStatus.setColorFilter(currentToolBarTextColor)
