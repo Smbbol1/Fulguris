@@ -241,15 +241,27 @@ class WebViewEx : WebView {
         destroy()
     }
 
-    /**
+        /**
      * Tell if this object should be destroyed.
      */
     private var iNeedDestruction = false
+
+    @Volatile
+    var backgroundAudioEnabled: Boolean = true
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        if (backgroundAudioEnabled && visibility != View.VISIBLE && !iNeedDestruction) {
+            super.onWindowVisibilityChanged(View.VISIBLE)
+        } else {
+            super.onWindowVisibilityChanged(visibility)
+        }
+    }
 
     /**
      * Does just that.
      */
     fun destroyIfNeeded() {
+
         Timber.d("destroyIfNeeded: $iNeedDestruction")
         if (iNeedDestruction) {
             destruction()
