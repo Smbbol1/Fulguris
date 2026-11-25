@@ -379,12 +379,16 @@ class WebPageClient(
             return
         }
 
-        // Flag that we have called onPageFinished
+                // Flag that we have called onPageFinished
         onPageFinishedDone = true
         // The page is done loading: hide the stop button / progress bar
         webPageTab.isLoading = false
+        if (userPreferences.loadImages && view.settings.blockNetworkImage) {
+            view.settings.blockNetworkImage = false
+        }
 
         // Inject nested scroll detection so that pull-to-refresh is suppressed when
+
         // the user scrolls inside a CSS overflow:auto/scroll element (e.g. a sidebar).
         // Only inject if pull-to-refresh is enabled and JavaScript is enabled.
         // Though if the config changes we could be missing it...
