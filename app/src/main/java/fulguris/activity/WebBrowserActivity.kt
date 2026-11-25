@@ -4272,14 +4272,15 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
      * Called when the user presses Home or switches to another app.
      * Auto-enter PiP if a fullscreen video is currently playing (Netflix-style behavior).
      */
-    override fun onUserLeaveHint() {
+        override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (customView != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+        if (!userPreferences.backgroundAudioPlayback && customView != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             enterPipMode()
         }
     }
 
     override fun onBackPressed() {
+
         doBackAction()
     }
 
