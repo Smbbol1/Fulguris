@@ -5701,12 +5701,39 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
      *
      * @param v the view that the user has clicked
      */
-                override fun onClick(v: View) {
+                    override fun onClick(v: View) {
         if (v.id == R.id.button_clear_cache) {
             val currentTab = tabsManager.currentTab
-            val currentHost = currentTab?.url?.let { Uri.parse(it).host }
+            val currentHost = currentTab?.url?.let { Uri.parse(it).host?.lowercase() }
 
-            (currentTab?.webView ?: android.webkit.WebView(this)).clearCache(true)
+            // Dominios de IAs y desarrollo protegidos aunque no estén en primer plano
+            val protectedHosts = listOf(
+                "deepseek.com",
+                "chatgpt.com",
+                "openai.com",
+                "claude.ai",
+                "://google.com",
+                "://google.com",
+                "://microsoft.com",
+                "perplexity.ai",
+                "grok.com",
+                "x.ai",
+                "mistral.ai",
+                "poe.com",
+                "huggingface.co",
+                "qwen.ai",
+                "moonshot.cn",
+                "kimi.com",
+                "meta.ai",
+                "you.com",
+                "phind.com",
+                "github.com",
+                "gitlab.com"
+            )
+
+            // Limpia caché de disco usando cualquier WebView existente sin instanciar uno nuevo en RAM
+            val targetWebView = currentTab?.webView ?: tabsManager.allTabs.firstOrNull { it.webView != null }?.webView
+            targetWebView?.clearCache(true)
 
             val clearWebStorageJs = """
                 (function() {
@@ -5723,8 +5750,11 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             """.trimIndent()
 
             tabsManager.allTabs.forEach { tab ->
-                val tabHost = Uri.parse(tab.url).host
-                if (tab != currentTab && (currentHost == null || tabHost != currentHost)) {
+                val tabHost = Uri.parse(tab.url).host?.lowercase() ?: ""
+                val isSameAsCurrent = (currentHost != null && tabHost == currentHost)
+                val isProtectedDomain = protectedHosts.any { tabHost == it || tabHost.endsWith(".$it") }
+
+                if (tab != currentTab && !isSameAsCurrent && !isProtectedDomain) {
                     tab.webView?.evaluateJavascript(clearWebStorageJs, null)
                 }
             }
@@ -5733,6 +5763,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             return
         }
         // With no tab open the tabs button is the way back in: instead of
+
 
         // opening an empty tab list / web-page menu it creates a tab.
         if (v.id == R.id.tabs_button && tabsManager.currentTab == null) {
