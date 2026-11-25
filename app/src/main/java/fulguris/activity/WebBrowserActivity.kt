@@ -3362,11 +3362,20 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             aView.requestFocus()
         }
 
-                // Remove existing focus change observer before we change our tab
+                        // Remove existing focus change observer before we change our tab
         lastTabView?.onFocusChangeListener = null
         // Change our tab
         lastTabView = aView
+        // Restaurar barra flotante de Copiar/Pegar si había texto seleccionado en esta pestaña
+        (aView as? android.webkit.WebView)?.let { web ->
+            mainHandler.postDelayed({
+                web.evaluateJavascript(
+                    "(function(){var s=window.getSelection();if(s&&s.rangeCount>0&&s.toString().length>0){var r=s.getRangeAt(0);s.removeAllRanges();s.addRange(r);}})();"
+                , null)
+            }, 300)
+        }
         // Proteger el proceso WebView contra cierre por memoria en Android 8.0+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && aView is android.webkit.WebView) {
             aView.setRendererPriorityPolicy(android.webkit.WebView.RENDERER_PRIORITY_IMPORTANT, false)
         }
