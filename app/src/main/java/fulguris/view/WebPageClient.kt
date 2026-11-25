@@ -582,12 +582,15 @@ class WebPageClient(
             webBrowser.showActionBar()
         }
 
-                // Reset flag to fetch meta tags for new page
+                                // Reset flag to fetch meta tags for new page
         webPageTab.shouldFetchMetaTags = true
+
+        injectBackgroundAudioEnabler(view)
 
         if (userPreferences.loadImages) {
             view.settings.blockNetworkImage = true
         }
+
 
         //uiController.onTabChanged(webPageTab)
         webBrowser.onPageStarted(webPageTab)
