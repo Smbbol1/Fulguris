@@ -164,14 +164,39 @@ class WebPageClient(
         adBlock = chooseAdBlocker()
     }
 
-    private fun chooseAdBlocker(): AdBlocker = if (userPreferences.adBlockEnabled) {
+        private fun chooseAdBlocker(): AdBlocker = if (userPreferences.adBlockEnabled) {
         abpBlockerManager
     } else {
         noopBlocker
     }
 
+    private fun injectBackgroundAudioEnabler(view: WebView) {
+        if (!userPreferences.backgroundAudioPlayback || !view.settings.javaScriptEnabled) return
+        val js = """
+            (function() {
+                if (window.__fulgurisBgAudioInstalled) return;
+                window.__fulgurisBgAudioInstalled = true;
+                try {
+                    Object.defineProperty(document, 'hidden', { get: function() { return false; }, configurable: true });
+                    Object.defineProperty(document, 'visibilityState', { get: function() { return 'visible'; }, configurable: true });
+                    Object.defineProperty(document, 'webkitHidden', { get: function() { return false; }, configurable: true });
+                    Object.defineProperty(document, 'webkitVisibilityState', { get: function() { return 'visible'; }, configurable: true });
+                } catch (e) {}
+                var blockEvent = function(e) {
+                    e.stopImmediatePropagation();
+                };
+                document.addEventListener('visibilitychange', blockEvent, true);
+                document.addEventListener('webkitvisibilitychange', blockEvent, true);
+                window.addEventListener('visibilitychange', blockEvent, true);
+                window.addEventListener('pagehide', blockEvent, true);
+            })();
+        """.trimIndent()
+        view.evaluateJavascript(js, null)
+    }
+
     /**
      * Should be called once when the root HTML page had been loaded.
+
      *
      * If user requested a viewport different than 100% then we enable wide viewport mode and inject some JavaScript to manipulate meta viewport HTML element.
      * This enables a zoomed out desktop mode on smartphones.
