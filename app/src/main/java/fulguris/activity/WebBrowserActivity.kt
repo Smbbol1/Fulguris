@@ -4213,21 +4213,28 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         iBinding.emptyTabsView.isVisible = true
     }
 
-    override fun onPause() {
+        override fun onPause() {
         super.onPause()
         Timber.d("onPause")
 
-        // In PiP mode, only pause non-current tabs so video keeps playing
-        val inPip = isPipRequested ||
-            (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N && isInPictureInPictureMode)
-        if (inPip) {
-            tabsManager.pauseAllExceptCurrent()
+        if (userPreferences.backgroundAudioPlayback) {
+            if (isFinishing) {
+                tabsManager.pauseAll()
+            }
         } else {
-            tabsManager.pauseAll()
+            // In PiP mode, only pause non-current tabs so video keeps playing
+            val inPip = isPipRequested ||
+                (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N && isInPictureInPictureMode)
+            if (inPip) {
+                tabsManager.pauseAllExceptCurrent()
+            } else {
+                tabsManager.pauseAll()
+            }
         }
 
         // Dismiss any popup menu
         iMenuCustom.dismiss()
+
         iMenuSessions.dismiss()
 
         if (isIncognito() && isFinishing) {
