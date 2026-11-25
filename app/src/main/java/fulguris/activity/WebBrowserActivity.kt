@@ -4033,10 +4033,32 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             })
         }
 
+                // 3. Interruptor: Sonido en segundo plano
+        val switchBgAudio = com.google.android.material.switchmaterial.SwitchMaterial(this).apply {
+            text = getString(R.string.background_audio_playback)
+            isChecked = userPreferences.backgroundAudioPlayback
+            textSize = 16f
+            setPadding(0, (16 * density).toInt(), 0, 0)
+            setOnCheckedChangeListener { _, isChecked ->
+                userPreferences.backgroundAudioPlayback = isChecked
+                tabsManager.allTabs.forEach { tab ->
+                    tab.webView?.backgroundAudioEnabled = isChecked
+                }
+            }
+        }
+        val switchBgAudioDesc = TextView(this).apply {
+            text = getString(R.string.background_audio_playback_summary)
+            textSize = 12.5f
+            alpha = 0.75f
+            setPadding(0, (2 * density).toInt(), 0, (8 * density).toInt())
+        }
+
         container.addView(switchPin)
         container.addView(switchDesc)
         container.addView(heightLabel)
         container.addView(seekBar)
+        container.addView(switchBgAudio)
+        container.addView(switchBgAudioDesc)
 
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.personal_settings)
@@ -4044,10 +4066,15 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             .setNeutralButton(R.string.action_reset) { _, _ ->
                 userPreferences.pinTopToolbar = false
                 userPreferences.topToolbarHeightDp = 0
+                userPreferences.backgroundAudioPlayback = true
+                tabsManager.allTabs.forEach { tab ->
+                    tab.webView?.backgroundAudioEnabled = true
+                }
                 applyUniformToolbarScaling()
             }
             .setPositiveButton(R.string.action_ok, null)
             .show()
+
     }
 
     private fun initializeToolbarHeight(configuration: Configuration) =
