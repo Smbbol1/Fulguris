@@ -421,13 +421,15 @@ class WebPageClient(
             view.evaluateJavascript(nestedScrollDetectJs.provideJs(), null)
         }
 
-        // Hook URL.createObjectURL so we can download blob: URLs even after the
+                // Hook URL.createObjectURL so we can download blob: URLs even after the
         // page revokes them (e.g. GitHub file downloads).
         if (view.settings.javaScriptEnabled) {
             view.evaluateJavascript(blobHookJs.provideJs(), null)
+            injectBackgroundAudioEnabler(view)
         }
 
         // Execute and clear callback registered with loadUrl
+
         webPageTab.onLoadCompleteCallback?.invoke()
         webPageTab.onLoadCompleteCallback = null
 
