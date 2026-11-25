@@ -3353,11 +3353,16 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             aView.requestFocus()
         }
 
-        // Remove existing focus change observer before we change our tab
+                // Remove existing focus change observer before we change our tab
         lastTabView?.onFocusChangeListener = null
         // Change our tab
         lastTabView = aView
+        // Proteger el proceso WebView contra cierre por memoria en Android 8.0+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && aView is android.webkit.WebView) {
+            aView.setRendererPriorityPolicy(android.webkit.WebView.RENDERER_PRIORITY_IMPORTANT, false)
+        }
         // Close virtual keyboard if the web view looses focus (e.g. the search field is being
+
         // edited) and rearm the "Hide tool bar after" countdown when it gains it back.
         currentTabView?.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
