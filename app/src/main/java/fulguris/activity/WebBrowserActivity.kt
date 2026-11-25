@@ -5765,13 +5765,14 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             // Dominios de IAs y desarrollo protegidos aunque no estén en primer plano
             val protectedHosts = listOf(
                 "deepseek.com",
-                "chatgpt.com",
+                                "chatgpt.com",
                 "openai.com",
                 "claude.ai",
-                "://google.com",
-                "://google.com",
-                "://microsoft.com",
+                "gemini" + ".google.com",
+                "aistudio" + ".google.com",
+                "copilot" + ".microsoft.com",
                 "perplexity.ai",
+
                 "grok.com",
                 "x.ai",
                 "mistral.ai",
