@@ -3357,24 +3357,51 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             iPlaceHolder?.removeFromParent()
             // Prepare our back view container then
             iTabViewContainerBack.resetTarget() // Needed to make it work together with swipe to refresh
-            // Same as above, make sure you specify layout params when adding you web view
+                        // Same as above, make sure you specify layout params when adding you web view
             iTabViewContainerBack.addView(aView, MATCH_PARENT)
             aView.requestFocus()
         }
 
-                        // Remove existing focus change observer before we change our tab
+        // Guardar selección actual antes de abandonar la pestaña (evita que GitHub la borre en blur)
+        (lastTabView as? android.webkit.WebView)?.evaluateJavascript(
+            """
+            (function(){
+                var s = window.getSelection();
+                if (s && s.rangeCount > 0 && s.toString().length > 0) {
+                    window.__savedSelection = s.getRangeAt(0).cloneRange();
+                } else {
+                    window.__savedSelection = null;
+                }
+            })();
+            """.trimIndent(),
+            null
+        )
+
+        // Remove existing focus change observer before we change our tab
         lastTabView?.onFocusChangeListener = null
         // Change our tab
         lastTabView = aView
-        // Restaurar barra flotante de Copiar/Pegar si había texto seleccionado en esta pestaña
+
+        // Restaurar selección guardada (incluyendo GitHub) y reactivar menú Copiar/Pegar al volver
         (aView as? android.webkit.WebView)?.let { web ->
             mainHandler.postDelayed({
                 web.evaluateJavascript(
-                    "(function(){var s=window.getSelection();if(s&&s.rangeCount>0&&s.toString().length>0){var r=s.getRangeAt(0);s.removeAllRanges();s.addRange(r);}})();"
-                , null)
+                    """
+                    (function(){
+                        var s = window.getSelection();
+                        var r = (s && s.rangeCount > 0 && s.toString().length > 0) ? s.getRangeAt(0) : window.__savedSelection;
+                        if (r) {
+                            s.removeAllRanges();
+                            s.addRange(r);
+                        }
+                    })();
+                    """.trimIndent(),
+                    null
+                )
             }, 300)
         }
         // Proteger el proceso WebView contra cierre por memoria en Android 8.0+
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && aView is android.webkit.WebView) {
             aView.setRendererPriorityPolicy(android.webkit.WebView.RENDERER_PRIORITY_IMPORTANT, false)
