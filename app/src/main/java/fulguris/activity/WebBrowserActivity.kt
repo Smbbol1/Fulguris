@@ -3333,7 +3333,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
                 // �or if we already have a tab animation running
                 || iTabAnimator!=null
 
-        // If we have not swapped our views yet
+                // If we have not swapped our views yet
         if (skipAnimation) {
             // Just perform our layout changes in our front view container then
             // We need to specify the layout params otherwise WebView fails in the strangest way.
@@ -3343,7 +3343,16 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             lastTabView?.removeFromParent()
             iTabViewContainerFront.resetTarget() // Needed to make it work together with swipe to refresh
             aView.requestFocus()
+            // Reactivar barra flotante de Copiar/Pegar si la pestaña conserva texto seleccionado
+            (aView as? android.webkit.WebView)?.let { web ->
+                mainHandler.postDelayed({
+                    web.evaluateJavascript(
+                        "(function(){var s=window.getSelection();if(s&&s.rangeCount>0&&s.toString().length>0){var r=s.getRangeAt(0);s.removeAllRanges();s.addRange(r);}})();"
+                    , null)
+                }, 150)
+            }
         } else {
+
             // Remove place holder
             iPlaceHolder?.removeFromParent()
             // Prepare our back view container then
