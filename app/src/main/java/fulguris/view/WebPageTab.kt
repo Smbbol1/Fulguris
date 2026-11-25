@@ -831,20 +831,23 @@ class WebPageTab(
                 mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             }
 
-            if (!isIncognito || Capabilities.FULL_INCOGNITO.isSupported) {
+                        if (!isIncognito || Capabilities.FULL_INCOGNITO.isSupported) {
                 domStorageEnabled = true
-                cacheMode = LOAD_DEFAULT
                 databaseEnabled = true
                 cacheMode = WebSettings.LOAD_DEFAULT
             } else {
                 domStorageEnabled = false
                 // TODO: Is this really needed for incognito mode?
-                cacheMode = LOAD_NO_CACHE
                 databaseEnabled = false
                 cacheMode = WebSettings.LOAD_NO_CACHE
             }
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                safeBrowsingEnabled = false
+            }
+
             setSupportZoom(true)
+
             builtInZoomControls = true
             displayZoomControls = false
             allowContentAccess = true
