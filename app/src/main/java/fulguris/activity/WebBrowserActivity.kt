@@ -3410,12 +3410,18 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
                 )
             }, 300)
         }
+                // Sincronizar preferencia de sonido en segundo plano
+        if (aView is WebViewEx) {
+            aView.backgroundAudioEnabled = userPreferences.backgroundAudioPlayback
+        }
+
         // Proteger el proceso WebView contra cierre por memoria en Android 8.0+
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && aView is android.webkit.WebView) {
             aView.setRendererPriorityPolicy(android.webkit.WebView.RENDERER_PRIORITY_IMPORTANT, false)
         }
+
         // Close virtual keyboard if the web view looses focus (e.g. the search field is being
 
         // edited) and rearm the "Hide tool bar after" countdown when it gains it back.
