@@ -506,12 +506,18 @@ class UserPreferences @Inject constructor(
      */
     var pinTopToolbar by preferences.booleanPreference(PIN_TOP_TOOLBAR, false)
 
-    /**
+        /**
      * Custom height in dp for the top toolbar (0 = use theme default).
      */
     var topToolbarHeightDp by preferences.intPreference(TOP_TOOLBAR_HEIGHT_DP, 0)
 
+    /**
+     * Reproducción de sonido en segundo plano (pestañas, salir de la app o pantalla apagada)
+     */
+    var backgroundAudioPlayback by preferences.booleanPreference(BACKGROUND_AUDIO_PLAYBACK, true)
+
 }
+
 
 
 // SL: Looks like those are the actual shared property keys thus overriding what ever was defined in our XML
