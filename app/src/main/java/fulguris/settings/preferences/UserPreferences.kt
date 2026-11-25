@@ -543,4 +543,6 @@ private const val BOOKMARKS_CHANGED = "bookmarksChanged"
 private const val SEARCH_SUGGESTIONS = "searchSuggestionsChoice"
 private const val PIN_TOP_TOOLBAR = "pinTopToolbar"
 private const val TOP_TOOLBAR_HEIGHT_DP = "topToolbarHeightDp"
+private const val BACKGROUND_AUDIO_PLAYBACK = "backgroundAudioPlayback"
+
 
