@@ -4728,21 +4728,21 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
     override fun updateTabNumber(number: Int) {
         iBindingToolbarContent.tabsButton.updateCount(number)
         updateTabSquares()
-        // Hide the no-tab empty state as soon as a tab exists again (e.g. a tab
+                // Hide the no-tab empty state as soon as a tab exists again (e.g. a tab
         // is restored from the "tab closed" snackbar or a new tab is created).
         if (number > 0) {
             iBinding.emptyTabsView.isVisible = false
         }
     }
 
-                private fun updateTabSquares() {
+    private fun updateTabSquares() {
         val container = iBindingToolbarContent.tabSquaresContainer
         container.removeAllViews()
         val totalTabs = tabsManager.size()
         val currentIndex = tabsManager.indexOfCurrentTab()
         val density = resources.displayMetrics.density
         val scale = getToolbarScaleFactor()
-        val sizePx = (40 * density * scale).toInt().coerceAtLeast((22 * density).toInt())
+        val sizePx = (38 * density * scale).toInt().coerceAtLeast((16 * density).toInt())
 
         for (i in 0 until totalTabs) {
             val isSelected = (i == currentIndex)
@@ -4750,8 +4750,8 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
                 layoutParams = android.widget.LinearLayout.LayoutParams(sizePx, sizePx)
                 configureSquare(
                     borderRadiusPx = 6f * density * scale,
-                    borderWidthPx = (if (isSelected) 2.8f else 1.5f) * density * scale,
-                    textSizePx = (10.5f * density * scale).coerceAtLeast(8f * density)
+                    borderWidthPx = (if (isSelected) 2.5f else 1.5f) * density * scale,
+                    textSizePx = (10.5f * density * scale).coerceAtLeast(6.5f * density)
                 )
 
                 textColor = currentToolBarTextColor
