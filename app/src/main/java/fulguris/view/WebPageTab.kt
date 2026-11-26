@@ -893,13 +893,19 @@ class WebPageTab(
     fun saveState(): Bundle {
          return getModel().toBundle()
     }
-    /**
+        /**
      * Pause the current WebView instance.
      */
     fun onPause() {
+        val ex = webView
+        if (ex != null && ex.backgroundAudioEnabled) {
+            ex.injectBackgroundMediaScript()
+            return
+        }
         webView?.onPause()
         Timber.d("WebView onPause: ${webView?.id}")
     }
+
 
     /**
      * Resume the current WebView instance.
