@@ -492,11 +492,13 @@ class WebPageTab(
         userPreferences.preferences.registerOnSharedPreferenceChangeListener(this)
         defaultDomainSettings.preferences.registerOnSharedPreferenceChangeListener(this)
 
-        webPageClient = WebPageClient(activity, this)
+                webPageClient = WebPageClient(activity, this)
         // Inflate our WebView as loading it from XML layout is needed to be able to set scrollbars color
         webView = activity.layoutInflater.inflate(R.layout.webview, null) as WebViewEx
         webView?.apply {
+            backgroundAudioEnabled = userPreferences.backgroundAudioPlayback
             proxy = this@WebPageTab
+
             Timber.d("WebView scrollbar defaults: ${scrollBarSize.toFloat().dp}, $scrollBarDefaultDelayBeforeFade, $scrollBarFadeDuration")
             scrollBarSize = userPreferences.scrollbarSize.px.toInt()
             isScrollbarFadingEnabled = userPreferences.scrollbarFading
