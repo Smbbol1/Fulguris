@@ -3372,6 +3372,9 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             aView.requestFocus()
         }
 
+                // Mantener activo el audio y el avance automático en la pestaña que pasa a segundo plano
+        (lastTabView as? WebViewEx)?.setBackgroundMediaState(userPreferences.backgroundAudioPlayback)
+
         // Guardar selección actual antes de abandonar la pestaña (evita que GitHub la borre en blur)
         (lastTabView as? android.webkit.WebView)?.evaluateJavascript(
             """
@@ -3410,12 +3413,13 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
                 )
             }, 300)
         }
-                // Sincronizar preferencia de sonido en segundo plano
+        // Sincronizar preferencia de sonido en segundo plano en la pestaña activa
         if (aView is WebViewEx) {
-            aView.backgroundAudioEnabled = userPreferences.backgroundAudioPlayback
+            aView.setBackgroundMediaState(userPreferences.backgroundAudioPlayback)
         }
 
         // Proteger el proceso WebView contra cierre por memoria en Android 8.0+
+
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && aView is android.webkit.WebView) {
