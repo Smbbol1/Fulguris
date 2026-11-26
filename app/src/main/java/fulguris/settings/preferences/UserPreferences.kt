@@ -511,10 +511,20 @@ class UserPreferences @Inject constructor(
      */
     var topToolbarHeightDp by preferences.intPreference(TOP_TOOLBAR_HEIGHT_DP, 0)
 
-    /**
+        /**
      * Reproducción de sonido en segundo plano (pestañas, salir de la app o pantalla apagada)
      */
     var backgroundAudioPlayback by preferences.booleanPreference(BACKGROUND_AUDIO_PLAYBACK, true)
+
+    /**
+     * Habilitar o deshabilitar la inyección del script JavaScript personalizado del usuario
+     */
+    var customUserScriptEnabled by preferences.booleanPreference(CUSTOM_USER_SCRIPT_ENABLED, false)
+
+    /**
+     * Código JavaScript personalizado guardado por el usuario
+     */
+    var customUserScriptCode by preferences.stringPreference(CUSTOM_USER_SCRIPT_CODE, "")
 
 }
 
@@ -544,5 +554,8 @@ private const val SEARCH_SUGGESTIONS = "searchSuggestionsChoice"
 private const val PIN_TOP_TOOLBAR = "pinTopToolbar"
 private const val TOP_TOOLBAR_HEIGHT_DP = "topToolbarHeightDp"
 private const val BACKGROUND_AUDIO_PLAYBACK = "backgroundAudioPlayback"
+private const val CUSTOM_USER_SCRIPT_ENABLED = "customUserScriptEnabled"
+private const val CUSTOM_USER_SCRIPT_CODE = "customUserScriptCode"
+
 
 
