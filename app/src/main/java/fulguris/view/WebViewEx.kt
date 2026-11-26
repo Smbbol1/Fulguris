@@ -246,19 +246,105 @@ class WebViewEx : WebView {
      */
     private var iNeedDestruction = false
 
-    @Volatile
+        @Volatile
     var backgroundAudioEnabled: Boolean = true
 
     override fun onWindowVisibilityChanged(visibility: Int) {
         if (backgroundAudioEnabled && visibility != View.VISIBLE && !iNeedDestruction) {
             super.onWindowVisibilityChanged(View.VISIBLE)
+            injectBackgroundMediaScript()
         } else {
             super.onWindowVisibilityChanged(visibility)
         }
     }
 
+    override fun onVisibilityChanged(changedView: View, visibility: Int) {
+        if (backgroundAudioEnabled && visibility != View.VISIBLE && !iNeedDestruction) {
+            super.onVisibilityChanged(changedView, View.VISIBLE)
+            injectBackgroundMediaScript()
+        } else {
+            super.onVisibilityChanged(changedView, visibility)
+        }
+    }
+
+    override fun onPause() {
+        if (backgroundAudioEnabled && !iNeedDestruction) {
+            injectBackgroundMediaScript()
+            return
+        }
+        super.onPause()
+    }
+
+    fun injectBackgroundMediaScript() {
+        if (!backgroundAudioEnabled || iNeedDestruction) return
+        val js = """
+            (function() {
+                if (window.__fulgurisBgMediaActive) return;
+                window.__fulgurisBgMediaActive = true;
+                try {
+                    Object.defineProperty(document, 'hidden', { get: function() { return false; }, configurable: true });
+                    Object.defineProperty(document, 'visibilityState', { get: function() { return 'visible'; }, configurable: true });
+                    Object.defineProperty(document, 'webkitHidden', { get: function() { return false; }, configurable: true });
+                    Object.defineProperty(document, 'webkitVisibilityState', { get: function() { return 'visible'; }, configurable: true });
+                } catch (e) {}
+
+                var blockEvent = function(e) {
+                    if (window.__fulgurisBgMediaEnabled !== false) {
+                        e.stopImmediatePropagation();
+                    }
+                };
+                document.addEventListener('visibilitychange', blockEvent, true);
+                document.addEventListener('webkitvisibilitychange', blockEvent, true);
+                window.addEventListener('pagehide', blockEvent, true);
+                window.addEventListener('blur', blockEvent, true);
+
+                var bindVideo = function(v) {
+                    if (!v || v.__fulgurisBound) return;
+                    v.__fulgurisBound = true;
+                    v.addEventListener('ended', function() {
+                        if (window.__fulgurisBgMediaEnabled === false) return;
+                        setTimeout(function() {
+                            if (!v.ended && !v.paused) return;
+                            var nextBtn = document.querySelector(
+                                '.ytp-next-button, ' +
+                                'button[aria-label*="Siguiente" i], ' +
+                                'button[aria-label*="Next" i], ' +
+                                '[data-testid="next-button"], ' +
+                                'ytm-player-controls button[aria-label*="Siguiente" i], ' +
+                                'ytm-player-controls button[aria-label*="Next" i]'
+                            );
+                            if (nextBtn && nextBtn.getAttribute('aria-disabled') !== 'true' && !nextBtn.disabled) {
+                                nextBtn.click();
+                            }
+                        }, 1500);
+                    }, false);
+                };
+
+                var scanVideos = function() {
+                    document.querySelectorAll('video, audio').forEach(bindVideo);
+                };
+                scanVideos();
+                new MutationObserver(scanVideos).observe(document.documentElement || document.body, { childList: true, subtree: true });
+            })();
+            window.__fulgurisBgMediaEnabled = true;
+        """.trimIndent()
+        post { evaluateJavascript(js, null) }
+    }
+
+    fun setBackgroundMediaState(enabled: Boolean) {
+        backgroundAudioEnabled = enabled
+        if (enabled) {
+            onResume()
+            resumeTimers()
+            injectBackgroundMediaScript()
+        } else {
+            post { evaluateJavascript("window.__fulgurisBgMediaEnabled = false;", null) }
+        }
+    }
+
     /**
      * Does just that.
+
      */
     fun destroyIfNeeded() {
 
