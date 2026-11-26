@@ -1257,11 +1257,13 @@ class WebPageClient(
         Timber.d("$ihs : doUpdateVisitedHistory: $isReload - $url - ${view.url}")
         super.doUpdateVisitedHistory(view, url, isReload)
 
-        // We used that
+                // We used that
         //onPageFinishedDone = false
 
+        injectCustomUserScript(view)
         updateUrlIfNeeded(url)
     }
+
 
     /**
      * Called when an HTTP error is received from the server.
