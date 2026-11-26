@@ -4222,11 +4222,12 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         super.onPause()
         Timber.d("onPause")
 
-        if (userPreferences.backgroundAudioPlayback) {
+                if (userPreferences.backgroundAudioPlayback) {
             if (isFinishing) {
                 tabsManager.pauseAll()
             }
         } else {
+
             // In PiP mode, only pause non-current tabs so video keeps playing
             val inPip = isPipRequested ||
                 (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N && isInPictureInPictureMode)
