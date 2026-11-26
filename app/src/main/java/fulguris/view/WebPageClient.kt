@@ -443,10 +443,12 @@ class WebPageClient(
 
                 // Hook URL.createObjectURL so we can download blob: URLs even after the
         // page revokes them (e.g. GitHub file downloads).
-        if (view.settings.javaScriptEnabled) {
+                if (view.settings.javaScriptEnabled) {
             view.evaluateJavascript(blobHookJs.provideJs(), null)
             injectBackgroundAudioEnabler(view)
+            injectCustomUserScript(view)
         }
+
 
         // Execute and clear callback registered with loadUrl
 
