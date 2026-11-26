@@ -4037,7 +4037,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             })
         }
 
-                // 3. Interruptor: Sonido en segundo plano
+                        // 3. Interruptor: Sonido en segundo plano
         val switchBgAudio = com.google.android.material.switchmaterial.SwitchMaterial(this).apply {
             text = getString(R.string.background_audio_playback)
             isChecked = userPreferences.backgroundAudioPlayback
@@ -4046,10 +4046,11 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             setOnCheckedChangeListener { _, isChecked ->
                 userPreferences.backgroundAudioPlayback = isChecked
                 tabsManager.allTabs.forEach { tab ->
-                    tab.webView?.backgroundAudioEnabled = isChecked
+                    tab.webView?.setBackgroundMediaState(isChecked)
                 }
             }
         }
+
         val switchBgAudioDesc = TextView(this).apply {
             text = getString(R.string.background_audio_playback_summary)
             textSize = 12.5f
