@@ -191,11 +191,31 @@ class WebPageClient(
                 window.addEventListener('pagehide', blockEvent, true);
             })();
         """.trimIndent()
-        view.evaluateJavascript(js, null)
+                view.evaluateJavascript(js, null)
+    }
+
+    private fun injectCustomUserScript(view: WebView) {
+        if (!userPreferences.customUserScriptEnabled || !view.settings.javaScriptEnabled) return
+        val rawCode = userPreferences.customUserScriptCode.trim()
+        if (rawCode.isEmpty()) return
+        val wrappedJs = """
+            (function() {
+                if (window.__fulgurisCustomUserScriptInjected) return;
+                window.__fulgurisCustomUserScriptInjected = true;
+                window.unsafeWindow = window;
+                try {
+                    $rawCode
+                } catch (e) {
+                    console.error('Fulguris Custom UserScript error:', e);
+                }
+            })();
+        """.trimIndent()
+        view.evaluateJavascript(wrappedJs, null)
     }
 
     /**
      * Should be called once when the root HTML page had been loaded.
+
 
      *
      * If user requested a viewport different than 100% then we enable wide viewport mode and inject some JavaScript to manipulate meta viewport HTML element.
