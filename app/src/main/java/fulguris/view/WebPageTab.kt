@@ -1029,15 +1029,21 @@ class WebPageTab(
 
     }
 
-    /**
+        /**
      * Pauses the JavaScript timers of the
      * WebView instance, which will trigger a
      * pause for all WebViews in the app.
      */
     fun pauseTimers() {
+        val ex = webView
+        if (ex != null && ex.backgroundAudioEnabled) {
+            ex.injectBackgroundMediaScript()
+            return
+        }
         webView?.pauseTimers()
         Timber.d("Pausing JS timers")
     }
+
 
     /**
      * Resumes the JavaScript timers of the
