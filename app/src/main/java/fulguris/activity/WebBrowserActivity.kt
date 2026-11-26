@@ -4068,15 +4068,16 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.personal_settings)
             .setView(container)
-            .setNeutralButton(R.string.action_reset) { _, _ ->
+                        .setNeutralButton(R.string.action_reset) { _, _ ->
                 userPreferences.pinTopToolbar = false
                 userPreferences.topToolbarHeightDp = 0
                 userPreferences.backgroundAudioPlayback = true
                 tabsManager.allTabs.forEach { tab ->
-                    tab.webView?.backgroundAudioEnabled = true
+                    tab.webView?.setBackgroundMediaState(true)
                 }
                 applyUniformToolbarScaling()
             }
+
             .setPositiveButton(R.string.action_ok, null)
             .show()
 
