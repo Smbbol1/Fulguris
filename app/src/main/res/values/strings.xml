@@ -37,11 +37,20 @@
     <string name="personal_settings">Ajustes personales</string>
         <string name="pin_top_toolbar">Fijar barra superior</string>
     <string name="pin_top_toolbar_summary">Mantiene siempre visible la barra de direcciones, pestañas e iconos</string>
-    <string name="toolbar_height_slider">Altura de barra superior: %1$d dp</string>
+        <string name="toolbar_height_slider">Altura de barra superior: %1$d dp</string>
     <string name="background_audio_playback">Sonido en segundo plano</string>
     <string name="background_audio_playback_summary">Mantiene la reproducción de audio y video al cambiar de pestaña, salir o apagar la pantalla</string>
+    <string name="custom_userscript_enabled">Script personalizado (UserScript)</string>
+    <string name="custom_userscript_summary">Inyectar código JavaScript manual en las páginas web</string>
+    <string name="custom_userscript_edit">Editar código del script</string>
+    <string name="custom_userscript_dialog_title">Código JavaScript personalizado</string>
+    <string name="custom_userscript_hint">Pega aquí tu código JavaScript…</string>
+    <string name="custom_userscript_saved">Script personalizado guardado</string>
+    <string name="custom_userscript_cleared">Script personalizado borrado</string>
+    <string name="action_save">Guardar</string>
     <string name="options">Options</string>
     <string name="pref_title_location">Location</string>
+
 
 
     <string name="password">Save your passwords</string>
