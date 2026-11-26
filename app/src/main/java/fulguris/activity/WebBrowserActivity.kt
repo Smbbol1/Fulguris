@@ -4051,11 +4051,42 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
             }
         }
 
-        val switchBgAudioDesc = TextView(this).apply {
+                val switchBgAudioDesc = TextView(this).apply {
             text = getString(R.string.background_audio_playback_summary)
             textSize = 12.5f
             alpha = 0.75f
+            setPadding(0, (2 * density).toInt(), 0, (16 * density).toInt())
+        }
+
+        // 4. Interruptor y editor: Script personalizado (UserScript)
+        val switchUserScript = com.google.android.material.switchmaterial.SwitchMaterial(this).apply {
+            text = getString(R.string.custom_userscript_enabled)
+            isChecked = userPreferences.customUserScriptEnabled
+            textSize = 16f
+            setOnCheckedChangeListener { _, isChecked ->
+                userPreferences.customUserScriptEnabled = isChecked
+                if (isChecked) {
+                    tabsManager.currentTab?.reload()
+                }
+            }
+        }
+
+        val switchUserScriptDesc = TextView(this).apply {
+            text = getString(R.string.custom_userscript_summary)
+            textSize = 12.5f
+            alpha = 0.75f
             setPadding(0, (2 * density).toInt(), 0, (8 * density).toInt())
+        }
+
+        val btnEditUserScript = com.google.android.material.button.MaterialButton(
+            this,
+            null,
+            com.google.android.material.R.attr.materialButtonOutlinedStyle
+        ).apply {
+            text = getString(R.string.custom_userscript_edit)
+            setOnClickListener {
+                showCustomUserScriptEditorDialog()
+            }
         }
 
         container.addView(switchPin)
@@ -4064,24 +4095,74 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         container.addView(seekBar)
         container.addView(switchBgAudio)
         container.addView(switchBgAudioDesc)
+        container.addView(switchUserScript)
+        container.addView(switchUserScriptDesc)
+        container.addView(btnEditUserScript)
 
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.personal_settings)
             .setView(container)
-                        .setNeutralButton(R.string.action_reset) { _, _ ->
+            .setNeutralButton(R.string.action_reset) { _, _ ->
                 userPreferences.pinTopToolbar = false
                 userPreferences.topToolbarHeightDp = 0
                 userPreferences.backgroundAudioPlayback = true
+                userPreferences.customUserScriptEnabled = false
+                userPreferences.customUserScriptCode = ""
                 tabsManager.allTabs.forEach { tab ->
                     tab.webView?.setBackgroundMediaState(true)
                 }
                 applyUniformToolbarScaling()
             }
-
             .setPositiveButton(R.string.action_ok, null)
             .show()
 
     }
+
+    private fun showCustomUserScriptEditorDialog() {
+        val density = resources.displayMetrics.density
+        val pad = (16 * density).toInt()
+        val editorContainer = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(pad, (12 * density).toInt(), pad, (4 * density).toInt())
+        }
+
+        val codeInput = EditText(this).apply {
+            setText(userPreferences.customUserScriptCode)
+            hint = getString(R.string.custom_userscript_hint)
+            typeface = android.graphics.Typeface.MONOSPACE
+            textSize = 12.5f
+            gravity = Gravity.TOP or Gravity.START
+            minLines = 10
+            maxLines = 18
+            isVerticalScrollBarEnabled = true
+            setHorizontallyScrolling(false)
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        }
+
+        editorContainer.addView(codeInput)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.custom_userscript_dialog_title)
+            .setView(editorContainer)
+            .setNeutralButton(R.string.action_delete) { _, _ ->
+                userPreferences.customUserScriptCode = ""
+                showSnackbar(getString(R.string.custom_userscript_cleared))
+            }
+            .setNegativeButton(R.string.action_cancel, null)
+            .setPositiveButton(R.string.action_save) { _, _ ->
+                val newCode = codeInput.text.toString()
+                userPreferences.customUserScriptCode = newCode
+                if (newCode.isNotBlank()) {
+                    userPreferences.customUserScriptEnabled = true
+                    tabsManager.currentTab?.reload()
+                }
+                showSnackbar(getString(R.string.custom_userscript_saved))
+            }
+            .show()
+    }
+
 
     private fun initializeToolbarHeight(configuration: Configuration) =
             iBinding.uiLayout.doOnLayout {
