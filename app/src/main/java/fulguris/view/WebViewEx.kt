@@ -435,14 +435,18 @@ class WebViewEx : WebView {
         postDelayed({ injectCodeMirrorBlockCopyScript() }, 1200)
     }
 
-    fun injectCodeMirrorBlockCopyScript() {
+        fun injectCodeMirrorBlockCopyScript() {
         val js = """
             (function() {
                 if (window.__fulgurisCmCopyHooked) return;
                 window.__fulgurisCmCopyHooked = true;
 
+                var lastGoodBlock = '';
+                var anchorOffset = null;
+
                 function getActiveCmView() {
-                    var nodes = document.querySelectorAll('.cm-editor, .cm-content');
+                    var nodes = document.querySelectorAll('.cm-content, .cm-editor');
+
                     for (var i = 0; i < nodes.length; i++) {
                         var el = nodes[i];
                         while (el && el !== document.body) {
