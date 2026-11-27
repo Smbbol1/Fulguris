@@ -1106,35 +1106,35 @@ class WebPageTab(
         }
     }
 
-    /**
-     * Finds all the instances of the text passed to this
-     * method and highlights the instances of that text
-     * in the WebView.
+        /**
+     * Find all instances of the query on the page and highlight them.
      *
-     * @param text the text to search for.
+     * @param query the string to search for.
      */
-    @SuppressLint("NewApi")
-    fun find(text: String) {
-        resetFind()
-        searchQuery = text
-        searchActive = true
-        // Kick off our search
-        webView?.findAllAsync(text)
+    fun find(query: String) {
+        val wv = webView ?: return
+        if (query.contains("\n") || query.contains("\r")) {
+            val fallbackLine = wv.findBlockInPage(query)
+            if (fallbackLine.isNotEmpty()) {
+                wv.findAllAsync(fallbackLine)
+            }
+        } else {
+            wv.findAllAsync(query)
+        }
     }
 
-    fun findNext() {
-        webView?.findNext(true)
-    }
-
-    fun findPrevious() {
-        webView?.findNext(false)
-    }
-
-    fun clearFind() {
+    /**
+     * Clear all highlighted search matches on the page.
+     */
+    fun clearFindMatches() {
+        webView?.evaluateJavascript(
+            "document.querySelectorAll('.cm-line').forEach(function(el){ el.style.backgroundColor = ''; });",
+            null
+        )
         webView?.clearMatches()
-        searchActive = false
-        resetFind()
     }
+
+    /**
 
     // Used to implement find in page
     private var iActiveMatchOrdinal: Int = -1
