@@ -466,45 +466,67 @@ class WebViewEx : WebView {
                     return null;
                 }
 
-                document.addEventListener('copy', function(e) {
+                                document.addEventListener('selectionchange', function() {
                     var cmView = getActiveCmView();
                     if (!cmView || !cmView.state) return;
 
                     var sel = cmView.state.selection.main;
-                    var text = '';
-                    if (sel && sel.from !== sel.to) {
-                        text = cmView.state.sliceDoc(sel.from, sel.to);
-                    } else {
-                        var domSel = window.getSelection();
-                        if (domSel && domSel.rangeCount > 0) {
-                            var range = domSel.getRangeAt(0);
-                            var container = range.commonAncestorContainer;
-                            var editor = container.nodeType === 1
-                                ? container.closest('.cm-editor')
-                                : (container.parentElement && container.parentElement.closest('.cm-editor'));
-                            if (editor) {
-                                var lines = editor.querySelectorAll('.cm-line');
-                                var collected = [];
-                                for (var i = 0; i < lines.length; i++) {
-                                    if (domSel.containsNode(lines[i], true)) {
-                                        collected.push(lines[i].textContent);
-                                    }
-                                }
-                                if (collected.length > 0) {
-                                    text = collected.join('\n');
-                                }
-                            }
+                    if (!sel || sel.empty) {
+                        anchorOffset = null;
+                        return;
+                    }
+
+                    if (anchorOffset === null) {
+                        anchorOffset = sel.anchor;
+                    }
+
+                    var from = Math.min(anchorOffset, sel.head, sel.from);
+                    var to = Math.max(anchorOffset, sel.head, sel.to);
+                    var docLen = cmView.state.doc.length;
+                    from = Math.max(0, Math.min(from, docLen));
+                    to = Math.max(0, Math.min(to, docLen));
+
+                    if (to > from) {
+                        var extracted = cmView.state.sliceDoc(from, to);
+                        if (extracted && extracted.length >= lastGoodBlock.length) {
+                            lastGoodBlock = extracted;
+                        }
+                    }
+                }, true);
+
+                document.addEventListener('touchstart', function() {
+                    var domSel = window.getSelection();
+                    if (!domSel || domSel.isCollapsed) {
+                        anchorOffset = null;
+                        lastGoodBlock = '';
+                    }
+                }, true);
+
+                document.addEventListener('copy', function(e) {
+                    var cmView = getActiveCmView();
+                    var textToCopy = '';
+
+                    if (cmView && cmView.state) {
+                        var sel = cmView.state.selection.main;
+                        var currentSlice = (sel && !sel.empty) ? cmView.state.sliceDoc(sel.from, sel.to) : '';
+                        textToCopy = (lastGoodBlock.length > currentSlice.length) ? lastGoodBlock : currentSlice;
+                    }
+
+                    if (!textToCopy) {
+                        var active = document.activeElement;
+                        if (active && active.tagName === 'TEXTAREA' && active.selectionEnd > active.selectionStart) {
+                            textToCopy = active.value.substring(active.selectionStart, active.selectionEnd);
                         }
                     }
 
-                    if (text && text.length > 0) {
+                    if (textToCopy && textToCopy.length > 0) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
                         if (e.clipboardData) {
-                            e.preventDefault();
-                            e.stopImmediatePropagation();
-                            e.clipboardData.setData('text/plain', text);
+                            e.clipboardData.setData('text/plain', textToCopy);
                         }
-                        if (navigator.clipboard && navigator.clipboard.writeText) {
-                            navigator.clipboard.writeText(text).catch(function() {});
+                        if (window._fulgurisClipboard && typeof window._fulgurisClipboard.copyText === 'function') {
+                            window._fulgurisClipboard.copyText(textToCopy);
                         }
                     }
                 }, true);
@@ -512,6 +534,7 @@ class WebViewEx : WebView {
         """.trimIndent()
         evaluateJavascript(js, null)
     }
+
 
 
     fun findBlockInPage(query: String, step: Int = 0, onResult: ((activeIndex: Int, total: Int) -> Unit)? = null) {
