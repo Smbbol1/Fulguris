@@ -1123,18 +1123,23 @@ class WebPageTab(
         }
     }
 
-    /**
-     * Clear all highlighted search matches on the page.
-     */
-    fun clearFindMatches() {
+        fun findNext() {
+        webView?.findNext(true)
+    }
+
+    fun findPrevious() {
+        webView?.findNext(false)
+    }
+
+    fun clearFind() {
         webView?.evaluateJavascript(
             "document.querySelectorAll('.cm-line').forEach(function(el){ el.style.backgroundColor = ''; });",
             null
         )
         webView?.clearMatches()
+        searchActive = false
+        resetFind()
     }
-
-    /**
 
     // Used to implement find in page
     private var iActiveMatchOrdinal: Int = -1
@@ -1145,6 +1150,7 @@ class WebPageTab(
      *
      */
     private fun resetFind() {
+
         iActiveMatchOrdinal = -1
         iNumberOfMatches = -1
     }
