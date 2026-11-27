@@ -408,7 +408,7 @@ class WebViewEx : WebView {
         super.loadUrl(url)
     }
 
-    /**
+        /**
      * Overrides [WebView.loadUrl(String, Map)].
      */
     override fun loadUrl(url: String, additionalHttpHeaders: MutableMap<String, String>) {
@@ -416,4 +416,60 @@ class WebViewEx : WebView {
         super.loadUrl(url, additionalHttpHeaders)
     }
 
+    fun findBlockInPage(query: String): String {
+        val normalized = query.replace("\r\n", "\n").replace("\r", "\n")
+        val lines = normalized.split("\n")
+        val firstNonEmptyLine = lines.firstOrNull { it.trim().isNotEmpty() }?.trim() ?: ""
+        val escapedQuery = org.json.JSONObject.quote(normalized)
+        val js = """
+            (function() {
+                var target = $escapedQuery;
+                var targetLines = target.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l.length > 0; });
+                if (targetLines.length === 0) return;
+
+                var cmLines = document.querySelectorAll('.cm-line');
+                if (cmLines.length > 0) {
+                    var lineTexts = Array.prototype.map.call(cmLines, function(el) { return el.textContent.trim(); });
+                    for (var i = 0; i <= lineTexts.length - targetLines.length; i++) {
+                        var match = true;
+                        for (var j = 0; j < targetLines.length; j++) {
+                            if (lineTexts[i + j].indexOf(targetLines[j]) === -1) {
+                                match = false;
+                                break;
+                            }
+                        }
+                        if (match) {
+                            var startEl = cmLines[i];
+                            var endEl = cmLines[i + targetLines.length - 1];
+                            startEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            var range = document.createRange();
+                            range.setStartBefore(startEl);
+                            range.setEndAfter(endEl);
+                            var sel = window.getSelection();
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                            for (var k = i; k < i + targetLines.length; k++) {
+                                cmLines[k].style.backgroundColor = 'rgba(255, 215, 0, 0.35)';
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                var tas = document.querySelectorAll('textarea');
+                for (var t = 0; t < tas.length; t++) {
+                    var idx = tas[t].value.indexOf(target);
+                    if (idx !== -1) {
+                        tas[t].focus();
+                        tas[t].setSelectionRange(idx, idx + target.length);
+                        return;
+                    }
+                }
+            })();
+        """.trimIndent()
+        evaluateJavascript(js, null)
+        return firstNonEmptyLine
+    }
+
 }
+
