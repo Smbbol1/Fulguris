@@ -411,65 +411,138 @@ class WebViewEx : WebView {
         /**
      * Overrides [WebView.loadUrl(String, Map)].
      */
-    override fun loadUrl(url: String, additionalHttpHeaders: MutableMap<String, String>) {
+        override fun loadUrl(url: String, additionalHttpHeaders: MutableMap<String, String>) {
         Timber.i("$ihs : loadUrl: $url (${additionalHttpHeaders.size} headers)")
         super.loadUrl(url, additionalHttpHeaders)
     }
 
-    fun findBlockInPage(query: String): String {
+    fun findBlockInPage(query: String, step: Int = 0, onResult: ((activeIndex: Int, total: Int) -> Unit)? = null) {
         val normalized = query.replace("\r\n", "\n").replace("\r", "\n")
-        val lines = normalized.split("\n")
-        val firstNonEmptyLine = lines.firstOrNull { it.trim().isNotEmpty() }?.trim() ?: ""
         val escapedQuery = org.json.JSONObject.quote(normalized)
         val js = """
             (function() {
                 var target = $escapedQuery;
-                var targetLines = target.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l.length > 0; });
-                if (targetLines.length === 0) return;
+                var step = $step;
 
-                var cmLines = document.querySelectorAll('.cm-line');
-                if (cmLines.length > 0) {
-                    var lineTexts = Array.prototype.map.call(cmLines, function(el) { return el.textContent.trim(); });
-                    for (var i = 0; i <= lineTexts.length - targetLines.length; i++) {
-                        var match = true;
+                document.querySelectorAll('.cm-line').forEach(function(el) {
+                    el.style.backgroundColor = '';
+                });
+
+                function getCmView() {
+                    var nodes = document.querySelectorAll('.cm-content, .cm-editor, [contenteditable="true"]');
+                    for (var n = 0; n < nodes.length; n++) {
+                        var el = nodes[n];
+                        while (el) {
+                            if (el.cmView && el.cmView.view) return el.cmView.view;
+                            if (el.cmView && el.cmView.rootView && el.cmView.rootView.view) return el.cmView.rootView.view;
+                            for (var k in el) {
+                                if (k.indexOf('cm') === 0 && el[k] && el[k].state && el[k].dispatch) return el[k];
+                            }
+                            el = el.parentElement;
+                        }
+                    }
+                    return null;
+                }
+
+                var targetLines = target.split('\n').map(function(l) { return l.trim(); });
+                while (targetLines.length > 0 && targetLines[0] === '') targetLines.shift();
+                while (targetLines.length > 0 && targetLines[targetLines.length - 1] === '') targetLines.pop();
+                if (targetLines.length === 0) return JSON.stringify({ active: -1, total: 0 });
+
+                var cmView = getCmView();
+                if (cmView && cmView.state && cmView.state.doc) {
+                    var doc = cmView.state.doc;
+                    var totalLines = doc.lines;
+                    var matches = [];
+
+                    for (var i = 1; i <= totalLines - targetLines.length + 1; i++) {
+                        var ok = true;
                         for (var j = 0; j < targetLines.length; j++) {
-                            if (lineTexts[i + j].indexOf(targetLines[j]) === -1) {
-                                match = false;
+                            var lineText = doc.line(i + j).text.trim();
+                            if (targetLines[j] !== '' && lineText.indexOf(targetLines[j]) === -1) {
+                                ok = false;
                                 break;
                             }
                         }
-                        if (match) {
-                            var startEl = cmLines[i];
-                            var endEl = cmLines[i + targetLines.length - 1];
-                            startEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            var range = document.createRange();
-                            range.setStartBefore(startEl);
-                            range.setEndAfter(endEl);
-                            var sel = window.getSelection();
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                            for (var k = i; k < i + targetLines.length; k++) {
-                                cmLines[k].style.backgroundColor = 'rgba(255, 215, 0, 0.35)';
-                            }
-                            return;
+                        if (ok) {
+                            var fromPos = doc.line(i).from;
+                            var toPos = doc.line(i + targetLines.length - 1).to;
+                            matches.push({ from: fromPos, to: toPos, startLine: i, endLine: i + targetLines.length - 1 });
                         }
                     }
+
+                    if (matches.length > 0) {
+                        var stateKey = target;
+                        if (!window.__fulgurisBlockSearch || window.__fulgurisBlockSearch.query !== stateKey) {
+                            window.__fulgurisBlockSearch = { query: stateKey, index: 0 };
+                        } else if (step !== 0) {
+                            window.__fulgurisBlockSearch.index = (window.__fulgurisBlockSearch.index + step + matches.length) % matches.length;
+                        }
+                        var idx = window.__fulgurisBlockSearch.index % matches.length;
+                        var m = matches[idx];
+
+                        if (typeof cmView.dispatch === 'function') {
+                            try {
+                                cmView.dispatch({
+                                    selection: { anchor: m.from, head: m.to },
+                                    scrollIntoView: true
+                                });
+                            } catch (e) {
+                                var scroller = document.querySelector('.cm-scroller');
+                                if (scroller) {
+                                    var ratio = (m.startLine - 1) / Math.max(1, totalLines);
+                                    scroller.scrollTop = Math.max(0, scroller.scrollHeight * ratio - scroller.clientHeight * 0.3);
+                                }
+                            }
+                        }
+
+                        setTimeout(function() {
+                            var visibleLines = document.querySelectorAll('.cm-line');
+                            visibleLines.forEach(function(el) {
+                                var txt = el.textContent.trim();
+                                if (txt && targetLines.indexOf(txt) !== -1) {
+                                    el.style.backgroundColor = 'rgba(255, 215, 0, 0.35)';
+                                }
+                            });
+                        }, 120);
+
+                        return JSON.stringify({ active: idx, total: matches.length });
+                    }
+                    return JSON.stringify({ active: -1, total: 0 });
                 }
 
                 var tas = document.querySelectorAll('textarea');
                 for (var t = 0; t < tas.length; t++) {
-                    var idx = tas[t].value.indexOf(target);
-                    if (idx !== -1) {
+                    var val = tas[t].value.replace(/\r\n/g, '\n');
+                    var pos = val.indexOf(target);
+                    if (pos !== -1) {
                         tas[t].focus();
-                        tas[t].setSelectionRange(idx, idx + target.length);
-                        return;
+                        tas[t].setSelectionRange(pos, pos + target.length);
+                        return JSON.stringify({ active: 0, total: 1 });
                     }
                 }
+
+                return JSON.stringify({ active: -1, total: 0 });
             })();
         """.trimIndent()
-        evaluateJavascript(js, null)
-        return firstNonEmptyLine
+
+        evaluateJavascript(js) { rawResult ->
+            try {
+                val clean = rawResult?.trim('"')?.replace("\\\"", "\"") ?: ""
+                if (clean.startsWith("{")) {
+                    val obj = org.json.JSONObject(clean)
+                    val active = obj.optInt("active", -1)
+                    val total = obj.optInt("total", 0)
+                    onResult?.invoke(active, total)
+                } else {
+                    onResult?.invoke(-1, 0)
+                }
+            } catch (_: Exception) {
+                onResult?.invoke(-1, 0)
+            }
+        }
     }
 
 }
+
 
