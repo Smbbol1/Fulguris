@@ -406,6 +406,7 @@ class WebViewEx : WebView {
     override fun loadUrl(url: String) {
         Timber.i("$ihs : loadUrl: $url")
         super.loadUrl(url)
+        postDelayed({ injectCodeMirrorBlockCopyScript() }, 1200)
     }
 
         /**
@@ -414,7 +415,83 @@ class WebViewEx : WebView {
         override fun loadUrl(url: String, additionalHttpHeaders: MutableMap<String, String>) {
         Timber.i("$ihs : loadUrl: $url (${additionalHttpHeaders.size} headers)")
         super.loadUrl(url, additionalHttpHeaders)
+        postDelayed({ injectCodeMirrorBlockCopyScript() }, 1200)
     }
+
+    fun injectCodeMirrorBlockCopyScript() {
+        val js = """
+            (function() {
+                if (window.__fulgurisCmCopyHooked) return;
+                window.__fulgurisCmCopyHooked = true;
+
+                function getActiveCmView() {
+                    var nodes = document.querySelectorAll('.cm-editor, .cm-content');
+                    for (var i = 0; i < nodes.length; i++) {
+                        var el = nodes[i];
+                        while (el && el !== document.body) {
+                            if (el.cmView && el.cmView.view && el.cmView.view.state) return el.cmView.view;
+                            if (el.cmView && el.cmView.rootView && el.cmView.rootView.view) return el.cmView.rootView.view;
+                            var keys = Object.getOwnPropertyNames(el);
+                            for (var k = 0; k < keys.length; k++) {
+                                var v = el[keys[k]];
+                                if (v && typeof v === 'object') {
+                                    if (v.state && v.state.doc && v.state.selection) return v;
+                                    if (v.view && v.view.state && v.view.state.doc) return v.view;
+                                }
+                            }
+                            el = el.parentElement;
+                        }
+                    }
+                    return null;
+                }
+
+                document.addEventListener('copy', function(e) {
+                    var cmView = getActiveCmView();
+                    if (!cmView || !cmView.state) return;
+
+                    var sel = cmView.state.selection.main;
+                    var text = '';
+                    if (sel && sel.from !== sel.to) {
+                        text = cmView.state.sliceDoc(sel.from, sel.to);
+                    } else {
+                        var domSel = window.getSelection();
+                        if (domSel && domSel.rangeCount > 0) {
+                            var range = domSel.getRangeAt(0);
+                            var container = range.commonAncestorContainer;
+                            var editor = container.nodeType === 1
+                                ? container.closest('.cm-editor')
+                                : (container.parentElement && container.parentElement.closest('.cm-editor'));
+                            if (editor) {
+                                var lines = editor.querySelectorAll('.cm-line');
+                                var collected = [];
+                                for (var i = 0; i < lines.length; i++) {
+                                    if (domSel.containsNode(lines[i], true)) {
+                                        collected.push(lines[i].textContent);
+                                    }
+                                }
+                                if (collected.length > 0) {
+                                    text = collected.join('\n');
+                                }
+                            }
+                        }
+                    }
+
+                    if (text && text.length > 0) {
+                        if (e.clipboardData) {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                            e.clipboardData.setData('text/plain', text);
+                        }
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(text).catch(function() {});
+                        }
+                    }
+                }, true);
+            })();
+        """.trimIndent()
+        evaluateJavascript(js, null)
+    }
+
 
     fun findBlockInPage(query: String, step: Int = 0, onResult: ((activeIndex: Int, total: Int) -> Unit)? = null) {
         val normalized = query.replace("\r\n", "\n").replace("\r", "\n")
