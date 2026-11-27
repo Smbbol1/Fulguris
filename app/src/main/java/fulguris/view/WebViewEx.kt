@@ -215,9 +215,10 @@ class WebViewEx : WebView {
         }
     }
 
-    companion object {
+        companion object {
         const val NESTED_SCROLL_JS_INTERFACE = "_fulgurisScroll"
         const val BLOB_JS_INTERFACE = "_fulgurisBlobDownload"
+        const val CLIPBOARD_JS_INTERFACE = "_fulgurisClipboard"
     }
 
     override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
