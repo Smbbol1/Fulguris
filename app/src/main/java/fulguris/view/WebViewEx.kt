@@ -53,14 +53,30 @@ class WebViewEx : WebView {
     @Volatile
     var isTouchOnNestedScrollable: Boolean = false
 
-    @SuppressLint("JavascriptInterface")
+        @SuppressLint("JavascriptInterface")
     private fun initNestedScrollDetection() {
         addJavascriptInterface(NestedScrollBridge(), NESTED_SCROLL_JS_INTERFACE)
         addJavascriptInterface(BlobDownloadBridge(), BLOB_JS_INTERFACE)
+        addJavascriptInterface(ClipboardBridge(), CLIPBOARD_JS_INTERFACE)
+    }
+
+    inner class ClipboardBridge {
+        @JavascriptInterface
+        fun copyText(text: String) {
+            if (text.isNotEmpty()) {
+                Handler(Looper.getMainLooper()).post {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    val clip = android.content.ClipData.newPlainText("GitHub Code", text)
+                    clipboard.setPrimaryClip(clip)
+                }
+            }
+        }
     }
 
     /**
      * Set this callback before calling evaluateJavascript with the blob-reading script.
+
+
      * It will be invoked on the main thread with the data URL ("data:<mime>;base64,...")
      * and the filename captured from the HTML5 download attribute (may be empty).
      */
