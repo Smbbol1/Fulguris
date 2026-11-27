@@ -3161,18 +3161,20 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
     /**
      *
      */
-    override fun onTabChangedUrl(aTab: WebPageTab) {
+        override fun onTabChangedUrl(aTab: WebPageTab) {
         Timber.d("onTabChangedUrl")
 
         if (tabsManager.currentTab==aTab) {
             setTaskDescription()
             updateNavigationButtons()
             updateToolBarText()
+            aTab.webView?.postDelayed({ aTab.webView?.injectCodeMirrorBlockCopyScript() }, 600)
             // Assuming we don't need that for now
             // TODO: Clean-up properly
             //bookmarksView?.handleUpdatedUrl(url)
         }
     }
+
 
     /**
      *
