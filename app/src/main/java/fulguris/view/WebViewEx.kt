@@ -221,6 +221,112 @@ class WebViewEx : WebView {
         const val CLIPBOARD_JS_INTERFACE = "_fulgurisClipboard"
     }
 
+        override fun startActionMode(callback: android.view.ActionMode.Callback?): android.view.ActionMode? {
+        return super.startActionMode(wrapActionModeCallback(callback))
+    }
+
+    override fun startActionMode(callback: android.view.ActionMode.Callback?, type: Int): android.view.ActionMode? {
+        return super.startActionMode(wrapActionModeCallback(callback), type)
+    }
+
+    private fun wrapActionModeCallback(callback: android.view.ActionMode.Callback?): android.view.ActionMode.Callback? {
+        if (callback == null) return null
+        val customMenuId = 998877
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M && callback is android.view.ActionMode.Callback2) {
+            return object : android.view.ActionMode.Callback2() {
+                override fun onCreateActionMode(mode: android.view.ActionMode, menu: android.view.Menu): Boolean {
+                    val res = callback.onCreateActionMode(mode, menu)
+                    if (url?.contains("github.com") == true) {
+                        menu.add(0, customMenuId, 0, "Copiar bloque")
+                            .setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+                    }
+                    return res
+                }
+
+                override fun onPrepareActionMode(mode: android.view.ActionMode, menu: android.view.Menu): Boolean {
+                    return callback.onPrepareActionMode(mode, menu)
+                }
+
+                override fun onActionItemClicked(mode: android.view.ActionMode, item: android.view.MenuItem): Boolean {
+                    if (item.itemId == customMenuId) {
+                        copyFullCodeBlockToClipboard()
+                        mode.finish()
+                        return true
+                    }
+                    return callback.onActionItemClicked(mode, item)
+                }
+
+                override fun onDestroyActionMode(mode: android.view.ActionMode) {
+                    callback.onDestroyActionMode(mode)
+                }
+
+                override fun onGetContentRect(mode: android.view.ActionMode, view: View, outRect: android.graphics.Rect) {
+                    callback.onGetContentRect(mode, view, outRect)
+                }
+            }
+        }
+        return callback
+    }
+
+    fun copyFullCodeBlockToClipboard() {
+        val js = """
+            (function() {
+                function findCmView() {
+                    var nodes = document.querySelectorAll('.cm-content, .cm-editor, [contenteditable="true"]');
+                    for (var i = 0; i < nodes.length; i++) {
+                        var el = nodes[i];
+                        while (el && el !== document.body) {
+                            if (el.cmView && el.cmView.view && el.cmView.view.state) return el.cmView.view;
+                            if (el.cmView && el.cmView.rootView && el.cmView.rootView.view) return el.cmView.rootView.view;
+                            var keys = Object.getOwnPropertyNames(el);
+                            for (var k = 0; k < keys.length; k++) {
+                                var v = el[keys[k]];
+                                if (v && typeof v === 'object') {
+                                    if (v.state && v.state.doc && v.state.selection) return v;
+                                    if (v.view && v.view.state && v.view.state.doc) return v.view;
+                                }
+                            }
+                            el = el.parentElement;
+                        }
+                    }
+                    return null;
+                }
+
+                var cmView = findCmView();
+                if (cmView && cmView.state) {
+                    var sel = cmView.state.selection.main;
+                    if (sel && sel.from !== sel.to) {
+                        return cmView.state.sliceDoc(sel.from, sel.to);
+                    }
+                }
+
+                var active = document.activeElement;
+                if (active && active.tagName === 'TEXTAREA' && active.selectionEnd > active.selectionStart) {
+                    return active.value.substring(active.selectionStart, active.selectionEnd);
+                }
+
+                var s = window.getSelection();
+                return s ? s.toString() : '';
+            })();
+        """.trimIndent()
+
+        evaluateJavascript(js) { raw ->
+            if (!raw.isNullOrBlank() && raw != "null" && raw != "\"\"") {
+                val decoded = try {
+                    org.json.JSONTokener(raw).nextValue() as? String ?: ""
+                } catch (_: Exception) {
+                    raw.trim('"')
+                }
+                if (decoded.isNotEmpty()) {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    val clip = android.content.ClipData.newPlainText("GitHub Code Block", decoded)
+                    clipboard.setPrimaryClip(clip)
+                    (context as? android.app.Activity)?.snackbar("Bloque copiado (${decoded.lines().size} líneas)")
+                }
+            }
+        }
+    }
+
     override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
 
         /*
@@ -234,6 +340,7 @@ class WebViewEx : WebView {
 
     /**
      * Start a print job, thus notably enabling saving a web page as PDF.
+
      */
     fun print() : PrintJob {
         val printManager: PrintManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
