@@ -1098,7 +1098,7 @@ class WebPageTab(
                 wv.settings.cacheMode = WebSettings.LOAD_NO_CACHE
 
                 // Handle the case where we display error page for instance
-                // Pass callback to restore cache mode after load completes OR is cancelled
+                                // Pass callback to restore cache mode after load completes OR is cancelled
                 loadUrl(url) {
                     wv.settings.cacheMode = originalCacheMode
                 }
@@ -1106,34 +1106,51 @@ class WebPageTab(
         }
     }
 
-        /**
+    /**
      * Find all instances of the query on the page and highlight them.
      *
      * @param query the string to search for.
      */
     fun find(query: String) {
+        searchQuery = query
+        searchActive = query.isNotEmpty()
         val wv = webView ?: return
         if (query.contains("\n") || query.contains("\r")) {
-            val fallbackLine = wv.findBlockInPage(query)
-            if (fallbackLine.isNotEmpty()) {
-                wv.findAllAsync(fallbackLine)
+            wv.clearMatches()
+            resetFind()
+            wv.findBlockInPage(query, 0) { active, total ->
+                onFindResultReceived(active, total, true)
             }
         } else {
             wv.findAllAsync(query)
         }
     }
 
-        fun findNext() {
-        webView?.findNext(true)
+    fun findNext() {
+        val wv = webView ?: return
+        if (searchQuery.contains("\n") || searchQuery.contains("\r")) {
+            wv.findBlockInPage(searchQuery, 1) { active, total ->
+                onFindResultReceived(active, total, true)
+            }
+        } else {
+            wv.findNext(true)
+        }
     }
 
     fun findPrevious() {
-        webView?.findNext(false)
+        val wv = webView ?: return
+        if (searchQuery.contains("\n") || searchQuery.contains("\r")) {
+            wv.findBlockInPage(searchQuery, -1) { active, total ->
+                onFindResultReceived(active, total, true)
+            }
+        } else {
+            wv.findNext(false)
+        }
     }
 
     fun clearFind() {
         webView?.evaluateJavascript(
-            "document.querySelectorAll('.cm-line').forEach(function(el){ el.style.backgroundColor = ''; });",
+            "window.__fulgurisBlockSearch = null; document.querySelectorAll('.cm-line').forEach(function(el){ el.style.backgroundColor = ''; });",
             null
         )
         webView?.clearMatches()
@@ -1143,6 +1160,7 @@ class WebPageTab(
 
     // Used to implement find in page
     private var iActiveMatchOrdinal: Int = -1
+
     private var iNumberOfMatches: Int = -1
     private var iSnackbar: Snackbar? = null
 
