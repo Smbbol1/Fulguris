@@ -442,7 +442,14 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
         iTabViewContainerBack = iBinding.tabViewContainerOne
         iTabViewContainerFront = iBinding.tabViewContainerTwo
 
-                // Setup our find in page bindings
+                                // Setup our find in page bindings
+        iBinding.findInPageInclude.searchQuery.apply {
+            isSingleLine = false
+            maxLines = 3
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        }
         iBinding.findInPageInclude.searchQuery.addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -450,6 +457,13 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
                 }
                 override fun afterTextChanged(s: Editable) {
                     val raw = s.toString()
+                    if (raw.contains("\n") || raw.contains("\r")) {
+                        if (!iSkipNextSearchQueryUpdate) {
+                            tabsManager.currentTab?.find(raw)
+                        }
+                        iSkipNextSearchQueryUpdate = false
+                        return
+                    }
                     val trimmed = raw.trim()
                     if (raw != trimmed && raw.length > 1) {
                         iSkipNextSearchQueryUpdate = true
@@ -465,6 +479,7 @@ abstract class WebBrowserActivity : ThemedBrowserActivity(),
                 }
             })
         iBinding.findInPageInclude.buttonNext.setOnClickListener(this)
+
 
         iBinding.findInPageInclude.buttonBack.setOnClickListener(this)
         iBinding.findInPageInclude.buttonQuit.setOnClickListener(this)
