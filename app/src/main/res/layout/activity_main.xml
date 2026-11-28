@@ -122,29 +122,241 @@
                                 android:animateLayoutChanges="false" />
 
                             <!--
-                                                        Empty state shown when there is no tab open (the last one was
-                                                        closed): the large Fulguris logo on the empty background, as on
-                                                        the onboarding first screen. The address field (focused) is the
-                                                        way to get back in by typing a URL or search.
-                                                        -->
-                                                        <FrameLayout
-                                                            android:id="@+id/emptyTabsView"
-                                                            android:layout_width="match_parent"
-                                                            android:layout_height="match_parent"
-                                                            android:background="?android:attr/colorBackground"
-                                                            android:visibility="gone"
-                                                            tools:visibility="visible">
+                            Empty state shown when there is no tab open (the last one was
+                            closed): the large Fulguris logo on the empty background, as on
+                            the onboarding first screen. The address field (focused) is the
+                            way to get back in by typing a URL or search.
+                            -->
+                            <FrameLayout
+                                android:id="@+id/emptyTabsView"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="?android:attr/colorBackground"
+                                android:visibility="gone"
+                                tools:visibility="visible">
 
-                                                            <ImageView
-                                                                android:layout_width="240dp"
-                                                                android:layout_height="240dp"
-                                                                android:layout_gravity="center"
-                                                                android:src="@drawable/ic_lightning_large"
-                                                                android:importantForAccessibility="no" />
-                                                        </FrameLayout>
+                                <ImageView
+                                    android:layout_width="240dp"
+                                    android:layout_height="240dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_lightning_large"
+                                    android:importantForAccessibility="no" />
+                            </FrameLayout>
 
                             <include layout="@layout/touch_tab_switcher"
                                 android:id="@+id/fabInclude" />
+
+                            <LinearLayout
+                                android:id="@+id/notepadContainer"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="#1E222A"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="46dp"
+                                    android:background="#161920"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingHorizontal="6dp">
+
+                                    <HorizontalScrollView
+                                        android:id="@+id/notepadTabsScroll"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"
+                                        android:layout_weight="1"
+                                        android:scrollbars="none">
+
+                                        <LinearLayout
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="match_parent"
+                                            android:gravity="center_vertical"
+                                            android:orientation="horizontal">
+
+                                            <LinearLayout
+                                                android:id="@+id/notepadTabsContainer"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:gravity="center_vertical"
+                                                android:orientation="horizontal" />
+
+                                            <TextView
+                                                android:id="@+id/notepadBtnAddTab"
+                                                android:layout_width="32dp"
+                                                android:layout_height="32dp"
+                                                android:layout_marginStart="4dp"
+                                                android:background="#252A34"
+                                                android:gravity="center"
+                                                android:text="+"
+                                                android:textColor="#A3BE8C"
+                                                android:textSize="17sp"
+                                                android:textStyle="bold" />
+
+                                            <TextView
+                                                android:id="@+id/notepadStatusTitle"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:paddingStart="8dp"
+                                                android:text="0L"
+                                                android:textColor="#636D83"
+                                                android:textSize="11sp" />
+                                        </LinearLayout>
+                                    </HorizontalScrollView>
+
+                                    <TextView
+                                        android:id="@+id/notepadBtnKeyboard"
+                                        android:layout_width="34dp"
+                                        android:layout_height="34dp"
+                                        android:gravity="center"
+                                        android:text="⌨"
+                                        android:textColor="#636D83"
+                                        android:textSize="17sp" />
+
+                                    <ImageButton
+                                        android:id="@+id/notepadBtnSearch"
+                                        style="?android:attr/actionButtonStyle"
+                                        android:layout_width="36dp"
+                                        android:layout_height="36dp"
+                                        android:contentDescription="Buscar bloque"
+                                        android:tint="#D8DEE9"
+                                        app:srcCompat="@drawable/ic_find_in_page" />
+
+                                    <ImageButton
+                                        android:id="@+id/notepadBtnPaste"
+                                        style="?android:attr/actionButtonStyle"
+                                        android:layout_width="36dp"
+                                        android:layout_height="36dp"
+                                        android:contentDescription="Pegar o reemplazar selección"
+                                        android:tint="#A3BE8C"
+                                        app:srcCompat="@drawable/ic_script_add" />
+
+                                    <ImageButton
+                                        android:id="@+id/notepadBtnUndo"
+                                        style="?android:attr/actionButtonStyle"
+                                        android:layout_width="36dp"
+                                        android:layout_height="36dp"
+                                        android:contentDescription="Deshacer"
+                                        android:tint="#D8DEE9"
+                                        app:srcCompat="@drawable/ic_action_back" />
+
+                                    <ImageButton
+                                        android:id="@+id/notepadBtnCopyAll"
+                                        style="?android:attr/actionButtonStyle"
+                                        android:layout_width="36dp"
+                                        android:layout_height="36dp"
+                                        android:contentDescription="Copiar todo"
+                                        android:tint="#88C0D0"
+                                        app:srcCompat="@drawable/ic_tabs" />
+
+                                    <ImageButton
+                                        android:id="@+id/notepadBtnClear"
+                                        style="?android:attr/actionButtonStyle"
+                                        android:layout_width="36dp"
+                                        android:layout_height="36dp"
+                                        android:contentDescription="Limpiar nota actual"
+                                        android:tint="#BF616A"
+                                        app:srcCompat="@drawable/ic_delete_forever" />
+
+                                    <ImageButton
+                                        android:id="@+id/notepadBtnClose"
+                                        style="?android:attr/actionButtonStyle"
+                                        android:layout_width="36dp"
+                                        android:layout_height="36dp"
+                                        android:contentDescription="Volver a pestaña"
+                                        android:tint="#D8DEE9"
+                                        app:srcCompat="@drawable/ic_action_delete" />
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:id="@+id/notepadSearchBar"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="#252A34"
+                                    android:gravity="center_vertical"
+                                    android:orientation="horizontal"
+                                    android:paddingHorizontal="8dp"
+                                    android:paddingVertical="4dp"
+                                    android:visibility="gone">
+
+                                    <EditText
+                                        android:id="@+id/notepadSearchInput"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:background="@null"
+                                        android:fontFamily="monospace"
+                                        android:hint="Pega o escribe el bloque a buscar..."
+                                        android:inputType="textMultiLine|textNoSuggestions"
+                                        android:maxLines="4"
+                                        android:padding="6dp"
+                                        android:textColor="#D8DEE9"
+                                        android:textColorHint="#636D83"
+                                        android:textSize="12sp" />
+
+                                    <TextView
+                                        android:id="@+id/notepadSearchCount"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:paddingHorizontal="6dp"
+                                        android:textColor="#E5C07B"
+                                        android:textSize="11sp" />
+
+                                    <ImageButton
+                                        android:id="@+id/notepadSearchPrev"
+                                        style="?android:attr/actionButtonStyle"
+                                        android:layout_width="34dp"
+                                        android:layout_height="34dp"
+                                        android:tint="#D8DEE9"
+                                        app:srcCompat="@drawable/ic_action_back" />
+
+                                    <ImageButton
+                                        android:id="@+id/notepadSearchNext"
+                                        style="?android:attr/actionButtonStyle"
+                                        android:layout_width="34dp"
+                                        android:layout_height="34dp"
+                                        android:tint="#D8DEE9"
+                                        app:srcCompat="@drawable/ic_action_forward" />
+                                </LinearLayout>
+
+                                <HorizontalScrollView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="1"
+                                    android:fillViewport="true">
+
+                                    <ScrollView
+                                        android:id="@+id/notepadScrollView"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:fillViewport="true">
+
+                                        <EditText
+                                            android:id="@+id/notepadEditText"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:background="@null"
+                                            android:cursorVisible="true"
+                                            android:fontFamily="monospace"
+                                            android:gravity="top|start"
+                                            android:hint="Usa el icono + verde arriba para pegar tu código (pulsa ⌨ para activar teclado)..."
+                                            android:imeOptions="flagNoExtractUi"
+                                            android:inputType="textMultiLine|textNoSuggestions"
+                                            android:minWidth="360dp"
+                                            android:padding="12dp"
+                                            android:scrollHorizontally="true"
+                                            android:textColor="#D8DEE9"
+                                            android:textColorHighlight="#55E5C07B"
+                                            android:textColorHint="#636D83"
+                                            android:textIsSelectable="true"
+                                            android:textSize="12.5sp" />
+                                    </ScrollView>
+                                </HorizontalScrollView>
+
+                            </LinearLayout>
 
                         </androidx.coordinatorlayout.widget.CoordinatorLayout>
                     </LinearLayout>
